@@ -1,0 +1,28 @@
+import { spawn } from 'node:child_process';
+import fs from 'node:fs';
+import fsp from 'node:fs/promises';
+import path from 'node:path';
+import { createHash } from 'node:crypto';
+import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { Upload } from '@aws-sdk/lib-storage';
+const required=name=>{if(!process.env[name])throw Error(`Missing ${name}`);return process.env[name];};
+const url=new URL(required('DIRECT_DATABASE_URL'));
+const env={...process.env,PGHOST:url.hostname,PGPORT:url.port||'5432',PGUSER:decodeURIComponent(url.username),PGPASSWORD:decodeURIComponent(url.password),PGDATABASE:url.pathname.slice(1),PGSSLMODE:'verify-full'};
+const folder=path.resolve('backups');await fsp.mkdir(folder,{recursive:true});
+const name=`${required('APP_ENV')}-${new Date().toISOString().replace(/[:.]/g,'-')}.dump`,file=path.join(folder,name);
+const docker=process.env.BACKUP_USE_DOCKER==='true';
+const args=docker?['run','--rm',...['PGHOST','PGPORT','PGUSER','PGPASSWORD','PGDATABASE','PGSSLMODE'].flatMap(k=>['-e',k]),'-v',`${folder}:/backups`,'postgres:17','pg_dump','--format=custom','--no-owner','--no-acl','--file',`/backups/${name}`]:['--format=custom','--no-owner','--no-acl','--file',file];
+await new Promise((resolve,reject)=>{const child=spawn(docker?'docker':'pg_dump',args,{env,stdio:['ignore','ignore','inherit']});child.once('error',reject);child.once('exit',code=>code===0?resolve():reject(Error('Database backup failed.')));});
+await fsp.chmod(file,0o600);
+const hash=createHash('sha256');for await(const chunk of fs.createReadStream(file))hash.update(chunk);
+const sha256=hash.digest('hex'),size=(await fsp.stat(file)).size;
+const client=new S3Client({endpoint:required('WASABI_ENDPOINT'),region:required('WASABI_REGION'),forcePathStyle:true,credentials:{accessKeyId:required('BACKUP_ACCESS_KEY_ID'),secretAccessKey:required('BACKUP_SECRET_ACCESS_KEY')},requestChecksumCalculation:'WHEN_REQUIRED'});
+const bucket=required('BACKUP_BUCKET'),key=`${required('APP_ENV')}/${name}`;
+await new Upload({client,params:{Bucket:bucket,Key:key,Body:fs.createReadStream(file),ContentType:'application/octet-stream',Metadata:{sha256}}}).done();
+// Verify downloaded bytes, not ETag (multipart ETags are not file checksums).
+const downloaded=await client.send(new GetObjectCommand({Bucket:bucket,Key:key}));const verified=createHash('sha256');for await(const chunk of downloaded.Body)verified.update(chunk);
+if(verified.digest('hex')!==sha256)throw Error('Backup checksum verification failed.');
+const manifest={environment:process.env.APP_ENV,key,sha256,size,createdAt:new Date().toISOString(),commit:process.env.RELEASE_SHA||process.env.GITHUB_SHA||'local'};
+await client.send(new PutObjectCommand({Bucket:bucket,Key:key+'.json',Body:JSON.stringify(manifest),ContentType:'application/json'}));
+await fsp.writeFile(path.join(folder,'latest.json'),JSON.stringify(manifest,null,2));
+console.log(JSON.stringify({event:'backup.verified',key,size,sha256}));

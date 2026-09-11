@@ -1,0 +1,338 @@
+.eventdesk-shell .global-search-trigger {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  width: clamp(180px, 24vw, 360px);
+  height: 38px;
+  padding: 0 12px;
+  margin-left: auto;
+  margin-right: 18px;
+  color: #64748b;
+  background: #f7f9fd;
+  border: 1px solid #e1e7f1;
+  border-radius: 9px;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.eventdesk-shell .global-search-trigger:hover {
+  border-color: #9caff4;
+  background: #eef3ff;
+}
+.global-search-trigger:focus-visible,
+.global-search-back:focus-visible,
+.global-search-related button:focus-visible {
+  outline: 2px solid #315cf5;
+  outline-offset: 3px;
+}
+.global-search-trigger > svg {
+  flex-shrink: 0;
+}
+.global-search-trigger > span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.global-search-trigger kbd {
+  margin-left: auto;
+  white-space: nowrap;
+  font: inherit;
+  font-size: 11px;
+  border: 1px solid #dce3ee;
+  border-radius: 4px;
+  padding: 1px 5px;
+  background: white;
+}
+.global-search-trigger:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.global-search-dialog[data-slot='dialog-content'] {
+  width: 680px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100dvh - 32px);
+  overflow: hidden;
+  padding: 0;
+  gap: 0;
+  background: #fff;
+  color: #18243b;
+  border-radius: 16px;
+}
+.global-search-dialog [data-slot='dialog-header'] {
+  padding: 22px 48px 16px 22px;
+}
+.global-search-dialog [data-slot='dialog-title'] {
+  font-size: 19px;
+  font-weight: 650;
+}
+.global-search-dialog [data-slot='dialog-description'] {
+  color: #63718a;
+  line-height: 1.5;
+}
+.global-search-dialog [data-slot='command'] {
+  padding: 0;
+  border-radius: 0 !important;
+  height: auto;
+  min-height: 0;
+  background: white;
+}
+.global-search-dialog [data-slot='command-input-wrapper'] {
+  padding: 0 18px;
+}
+.global-search-dialog [data-slot='input-group'] {
+  height: 46px !important;
+  border: 1px solid #dce4f2;
+  background: #f7f9fd;
+  padding: 0 10px;
+}
+.global-search-dialog [data-slot='command-input'] {
+  min-width: 0;
+  padding: 10px 4px;
+  font-size: 15px;
+  color: #18243b;
+}
+.global-search-dialog [data-slot='command-list'] {
+  max-height: min(430px, calc(100dvh - 275px));
+  padding: 0 10px 8px;
+  overscroll-behavior: contain;
+}
+.global-search-count {
+  padding: 12px 23px 4px;
+  color: #6c7890;
+  font-size: 12px;
+}
+.global-search-dialog [cmdk-group-heading] {
+  color: #5e6d86;
+  font-size: 12px;
+  font-weight: 650;
+  padding: 12px 10px 7px;
+}
+.global-search-dialog .global-search-result {
+  padding: 10px;
+  gap: 11px;
+  cursor: pointer;
+  min-height: 65px;
+}
+.global-search-dialog .global-search-result[data-selected='true'] {
+  background: #eef3ff;
+  color: #18243b;
+}
+.global-search-result > svg:last-child,
+.global-search-more > svg:last-child {
+  display: none;
+}
+.global-search-icon {
+  width: 37px;
+  height: 37px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: #edf2fc;
+  color: #3e65c3;
+}
+.global-search-icon.search-clients,
+.global-search-icon.search-leads {
+  background: #f1edfc;
+  color: #7957b8;
+}
+.global-search-icon.search-packages {
+  background: #fff2e3;
+  color: #a36722;
+}
+.global-search-icon.search-venues {
+  background: #e9f5f1;
+  color: #357b69;
+}
+.global-search-result-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+  gap: 4px;
+}
+.global-search-result-copy strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+.global-search-result-copy small {
+  color: #687891;
+  font-size: 12px;
+}
+.global-search-result-copy strong,
+.global-search-result-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.global-search-badge {
+  border: 1px solid #dfe6f1;
+  background: #f7f9fd;
+  padding: 3px 7px;
+  font-size: 11px;
+  line-height: 16px;
+  color: #536580;
+  border-radius: 5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.global-search-result-arrow {
+  color: #8b9ab1;
+}
+.global-search-dialog .global-search-more {
+  margin: 3px 10px 10px;
+  padding: 8px;
+  color: #315cf5;
+  cursor: pointer;
+}
+.global-search-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  padding: 35px 14px 40px;
+  text-align: center;
+  color: #64748b;
+}
+.global-search-empty > svg {
+  color: #8b9cbd;
+  margin-bottom: 5px;
+}
+.global-search-empty strong {
+  color: #35465f;
+  font-size: 14px;
+  font-weight: 600;
+}
+.global-search-empty p {
+  font-size: 13px;
+  margin: 0;
+}
+.global-search-footer {
+  border-top: 1px solid #e7ecf4;
+  padding: 11px 22px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #76849c;
+  background: #fafbfe;
+}
+.global-search-footer kbd {
+  font: inherit;
+  margin: 0 4px;
+}
+.global-search-client {
+  padding: 0 22px 22px;
+  min-height: 0;
+  overflow-y: auto;
+  max-height: calc(100dvh - 155px);
+}
+.global-search-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #315cf5;
+  padding: 5px 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.global-search-contact {
+  padding: 14px 0;
+  overflow-wrap: anywhere;
+}
+.global-search-contact p {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 9px 0;
+  color: #56667e;
+}
+.global-search-contact svg {
+  flex-shrink: 0;
+}
+.global-search-client h3 {
+  font-size: 13px;
+  font-weight: 650;
+  margin: 8px 0;
+}
+.global-search-client h3 span {
+  color: #7b88a0;
+  margin-left: 6px;
+}
+.global-search-related button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  background: white;
+  border: 1px solid #e3e9f3;
+  border-radius: 8px;
+  margin: 7px 0;
+  padding: 13px;
+  cursor: pointer;
+}
+.global-search-related button:hover {
+  background: #f3f6ff;
+}
+.global-search-related button > span:first-child {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 5px;
+}
+.global-search-related strong {
+  font-size: 14px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.global-search-related small {
+  color: #6d7b92;
+}
+.global-search-related svg {
+  flex-shrink: 0;
+}
+@media (max-width: 1150px) {
+  .eventdesk-shell .global-search-trigger {
+    width: 38px;
+    flex-shrink: 0;
+    justify-content: center;
+    padding: 0;
+    margin-right: 12px;
+  }
+  .global-search-trigger > span,
+  .global-search-trigger kbd {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  .eventdesk-shell .global-search-trigger {
+    margin-right: 6px;
+  }
+  .global-search-dialog [data-slot='dialog-header'] {
+    padding: 20px 44px 14px 18px;
+  }
+  .global-search-dialog [data-slot='command-input'] {
+    font-size: 16px;
+  }
+  .global-search-dialog .global-search-result {
+    gap: 8px;
+    padding: 10px 5px;
+  }
+  .global-search-icon {
+    width: 30px;
+    height: 34px;
+  }
+  .global-search-result-arrow {
+    display: none;
+  }
+  .global-search-badge {
+    font-size: 10px;
+    padding: 2px 5px;
+  }
+  .global-search-footer {
+    display: none;
+  }
+}

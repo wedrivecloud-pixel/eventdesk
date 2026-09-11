@@ -86,4 +86,3 @@ account-verification/recovery email requires SMTP setup and testing.
 The old beta README and hosting marker are retained under `docs/legacy/` as
 historical references. Root comparison documents describe prior beta work;
 they do not establish complete Check Cherry parity or current launch readiness.
-

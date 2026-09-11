@@ -1,0 +1,139 @@
+.staff-profile {
+  display: grid;
+  gap: 22px;
+}
+.staff-panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+.staff-box {
+  border: 1px solid #dce3ed;
+  border-radius: 12px;
+  padding: 22px;
+  background: #fff;
+}
+.staff-box h3,
+.staff-box h4 {
+  margin: 0 0 16px;
+}
+.staff-box p {
+  margin: 10px 0 16px;
+}
+.staff-week {
+  display: grid;
+  gap: 12px;
+}
+.staff-week-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  align-items: end;
+}
+.staff-summary {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0 22px;
+}
+.staff-summary > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+.staff-summary dt {
+  font-weight: 500;
+}
+.staff-summary dd {
+  margin: 0;
+  color: #526079;
+}
+.schedule-page {
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 24px;
+  font-family: Arial, sans-serif;
+  color: #19243b;
+}
+.schedule-page h1 {
+  font-size: 32px;
+  line-height: 1.2;
+}
+.schedule-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 24px;
+}
+.schedule-times {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+  gap: 10px;
+  margin: 18px 0;
+}
+.schedule-date-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  margin: 14px 0;
+}
+.schedule-date-grid button {
+  min-height: 42px;
+  border: 1px solid #dce3ed;
+  border-radius: 7px;
+  background: white;
+  color: #19243b;
+  cursor: pointer;
+}
+.schedule-date-grid button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.schedule-date-grid button[aria-pressed='true'] {
+  background: #263ede;
+  color: white;
+}
+.schedule-date-grid span {
+  text-align: center;
+  font-size: 12px;
+}
+.schedule-page .field {
+  display: grid;
+  gap: 8px;
+}
+.schedule-page input,
+.schedule-page select,
+.schedule-page textarea {
+  border: 1px solid #ccd5e3;
+  border-radius: 7px;
+  padding: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.schedule-page button {
+  cursor: pointer;
+}
+.schedule-page .error {
+  color: #b42318;
+}
+.schedule-page .success {
+  color: #16733b;
+}
+.schedule-honey {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+@media (max-width: 700px) {
+  .staff-week-row,
+  .schedule-layout {
+    grid-template-columns: 1fr;
+  }
+  .staff-box {
+    padding: 16px;
+  }
+  .schedule-page {
+    margin: 10px auto;
+    padding: 16px;
+  }
+}

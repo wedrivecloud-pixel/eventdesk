@@ -1,0 +1,70 @@
+.user-options-menu {
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  min-width: 230px;
+}
+.user-workspace {
+  display: grid;
+  gap: 20px;
+}
+.user-view-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.user-profile-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.user-profile-grid .settings-panel {
+  width: 100%;
+}
+.user-context {
+  padding: 18px 22px;
+  border: 1px solid #dce3ed;
+  border-radius: 10px;
+  background: #f3f6fc;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.user-context p {
+  margin: 4px 0 10px;
+}
+.user-billing-grid,
+.user-help-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.user-billing-grid article,
+.user-help-grid article {
+  border: 1px solid #dce3ed;
+  border-radius: 10px;
+  padding: 22px;
+}
+.user-help-grid p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #566176;
+}
+.user-profile-grid .manage-media-grid {
+  grid-template-columns: 1fr;
+}
+.sales-top-navigation .sales-menu-trigger span {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 1100px) {
+  .user-profile-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 650px) {
+  .user-help-grid,
+  .user-billing-grid {
+    grid-template-columns: 1fr;
+  }
+}

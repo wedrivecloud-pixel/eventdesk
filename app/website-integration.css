@@ -1,0 +1,271 @@
+.integration-home {
+  display: grid;
+  gap: 28px;
+}
+.integration-primary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+.integration-library {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.integration-card {
+  border: 1px solid #dce3ed;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  background: #fff;
+}
+.integration-card h3 {
+  font-size: 18px;
+  margin: 0;
+}
+.integration-card p {
+  font-size: 15px;
+  color: #5a6578;
+  margin: 0;
+  line-height: 1.6;
+  flex: 1;
+}
+.integration-card button {
+  display: inline-flex;
+  gap: 9px;
+  align-items: center;
+}
+.integration-status {
+  font-size: 13px;
+  background: #f0f3f8;
+  color: #5a6578;
+  padding: 5px 9px;
+  border-radius: 5px;
+}
+.integration-note {
+  background: #f3f6fc;
+  border: 1px solid #dce3ed;
+  padding: 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.integration-note p {
+  margin: 8px 0 0;
+}
+.integration-dialog {
+  width: min(1160px, calc(100vw - 40px)) !important;
+  max-width: 1160px !important;
+  max-height: 90vh;
+  overflow: auto;
+}
+.integration-builder {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  align-items: start;
+}
+.integration-output {
+  position: sticky;
+  top: 0;
+  min-width: 0;
+}
+.integration-output textarea {
+  font-family: monospace;
+  font-size: 13px;
+  min-height: 160px;
+  overflow-wrap: anywhere;
+}
+.integration-config input[type='color'] {
+  height: 44px;
+  padding: 4px;
+}
+.integration-url {
+  overflow-wrap: anywhere;
+}
+.integration-checklist {
+  max-height: 220px;
+  overflow: auto;
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+.integration-advanced {
+  border-top: 1px solid #dce3ed;
+  padding-top: 18px;
+}
+.integration-preview {
+  border: 1px solid #dce3ed;
+  border-radius: 8px;
+  width: 100%;
+  height: 440px;
+}
+.eventdesk-public-widget {
+  margin: 24px auto;
+  padding: 20px;
+  color: var(--widget-text);
+}
+.eventdesk-public-widget.widget-embedded {
+  margin: 0 auto;
+  padding: 16px;
+}
+.eventdesk-public-widget .widget-button {
+  display: inline-block;
+  padding: 12px 20px;
+  background: var(--widget-button);
+  color: var(--widget-button-text);
+  border: 0;
+  border-radius: var(--widget-radius);
+  text-decoration: none;
+  text-align: center;
+}
+.eventdesk-public-widget .widget-label,
+.eventdesk-public-widget label.field {
+  font-size: var(--widget-label-size);
+  font-weight: var(--widget-label-weight);
+  color: var(--widget-text);
+}
+.eventdesk-public-widget .field > input,
+.eventdesk-public-widget .field > textarea,
+.eventdesk-public-widget .field > select {
+  border: var(--widget-border-width) solid var(--widget-border);
+  border-radius: var(--widget-radius);
+  background: var(--widget-input-bg);
+  color: var(--widget-text);
+  font-family: inherit;
+  width: 100%;
+  padding: 12px;
+  font-weight: 400;
+}
+.eventdesk-public-widget.widget-wide-buttons button[type='submit'] {
+  width: 100%;
+}
+.eventdesk-public-widget .schedule-page {
+  margin: 0;
+  padding: 0;
+  max-width: none;
+  font-family: inherit;
+  color: var(--widget-text);
+}
+.eventdesk-public-widget .schedule-page .primary,
+.eventdesk-public-widget .schedule-date-grid button[aria-pressed='true'] {
+  background: var(--widget-button);
+  color: var(--widget-button-text);
+  border-color: var(--widget-button);
+  border-radius: var(--widget-radius);
+}
+.eventdesk-public-widget .schedule-page .secondary,
+.eventdesk-public-widget .schedule-date-grid button {
+  color: var(--widget-text);
+  border-color: var(--widget-border);
+  border-radius: var(--widget-radius);
+}
+.eventdesk-public-widget .schedule-date-grid button[aria-pressed='true'] {
+  color: var(--widget-button-text);
+}
+.eventdesk-public-widget .schedule-page button {
+  font-family: inherit;
+}
+.eventdesk-public-widget .widget-button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.widget-gallery-controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+.widget-gallery-controls button {
+  padding: 8px 14px;
+  border: 1px solid var(--widget-border);
+  border-radius: var(--widget-radius);
+  background: white;
+  color: var(--widget-text);
+}
+.widget-gallery-controls button[aria-pressed='true'] {
+  background: var(--widget-button);
+  color: var(--widget-button-text);
+}
+.widget-gallery-pagination {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  margin: 24px 0;
+}
+.widget-date-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 7px;
+  margin: 20px 0;
+}
+.widget-date-grid > span {
+  text-align: center;
+  font-size: 13px;
+}
+.widget-date-grid button {
+  min-height: 42px;
+  border: 1px solid var(--widget-border);
+  border-radius: var(--widget-radius);
+  background: white;
+  cursor: pointer;
+  color: var(--widget-text);
+}
+.widget-date-grid button[aria-pressed='true'] {
+  background: var(--widget-button);
+  color: var(--widget-button-text);
+}
+.widget-date-grid button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.widget-availability {
+  max-width: 650px;
+  margin: auto;
+}
+.widget-availability-result {
+  padding: 20px;
+  border: 1px solid var(--widget-border);
+  border-radius: var(--widget-radius);
+  margin-top: 22px;
+}
+.widget-sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+@media (max-width: 1000px) {
+  .integration-primary {
+    grid-template-columns: 1fr;
+  }
+  .integration-builder {
+    grid-template-columns: 1fr;
+  }
+  .integration-output {
+    position: static;
+  }
+}
+@media (max-width: 650px) {
+  .integration-library {
+    grid-template-columns: 1fr;
+  }
+  .integration-dialog {
+    width: calc(100vw - 20px) !important;
+    padding: 18px !important;
+  }
+  .eventdesk-public-widget {
+    padding: 16px;
+    margin: 10px auto;
+  }
+}

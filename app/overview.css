@@ -1,0 +1,453 @@
+.overview-dashboard {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+.overview-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.overview-heading p {
+  margin: 0;
+  color: #566176;
+  font-size: 14px;
+}
+.overview-heading button,
+.overview-menu {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.overview-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.overview-columns > div,
+.overview-columns > aside {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+.overview-widget {
+  min-width: 0;
+  overflow: hidden;
+}
+.overview-widget .panel-heading {
+  padding: 22px 24px;
+  gap: 12px;
+}
+.overview-widget h2,
+.overview-revenue h2 {
+  font-size: 20px;
+}
+.overview-empty {
+  margin: 0;
+  padding: 24px;
+  color: #657188;
+  font-size: 15px;
+  line-height: 1.65;
+}
+.overview-toolbar {
+  padding: 22px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.overview-view-all {
+  padding: 18px 24px;
+  border-top: 1px solid #e8edf4;
+  text-align: left;
+  width: 100%;
+  font-size: 14px;
+}
+.overview-booking {
+  margin: 0 20px 18px;
+  padding: 20px;
+  border: 1px solid #e0e6ef;
+  border-radius: 10px;
+  display: grid;
+  gap: 16px;
+}
+.overview-booking-date {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  color: #566176;
+}
+.overview-status {
+  background: #e8f5ed;
+  color: #206942;
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.overview-event-title {
+  font-size: 18px;
+  text-align: left;
+  line-height: 1.5;
+}
+.overview-booking-details {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.overview-booking-details strong {
+  font-weight: 600;
+}
+.overview-booking small {
+  display: block;
+  font-size: 13px;
+  line-height: 1.65;
+  color: #657188;
+}
+.overview-booking-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: end;
+  border-top: 1px solid #e8edf4;
+  padding-top: 14px;
+  font-size: 14px;
+}
+.overview-compact-row {
+  padding: 18px 24px;
+  display: grid;
+  gap: 5px;
+  border-top: 1px solid #e8edf4;
+  text-align: left;
+  width: 100%;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.overview-compact-row:hover {
+  background: #f6f8fd;
+}
+.overview-compact-row small {
+  color: #68758b;
+  font-size: 13px;
+}
+.overview-services {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 24px 22px;
+}
+.overview-services span {
+  padding: 7px 10px;
+  background: #f0f3fb;
+  border-radius: 6px;
+  font-size: 14px;
+}
+.overview-summary {
+  margin: 0;
+}
+.overview-revenue {
+  min-width: 0;
+  overflow: hidden;
+}
+.overview-revenue-controls {
+  padding: 0 24px 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 18px;
+}
+.overview-revenue-controls .field {
+  min-width: 150px;
+  flex: 1;
+}
+.overview-revenue-controls .sales-tabs {
+  flex: 2;
+  min-width: 260px;
+  align-self: center;
+}
+.overview-chart-title {
+  font-size: 16px;
+  text-align: center;
+  margin: 10px 18px 4px;
+}
+.overview-chart-period {
+  text-align: center;
+  color: #657188;
+  font-size: 13px;
+  margin: 0 0 16px;
+}
+.overview-chart {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  height: 280px;
+  width: 100%;
+  min-width: 0;
+}
+.overview-chart .recharts-surface {
+  cursor: pointer;
+}
+.revenue-chart-help {
+  margin: 0 24px 14px;
+  text-align: center;
+  color: #566176;
+  font-size: 14px;
+}
+.revenue-tooltip {
+  width: min(280px, 76vw);
+  padding: 16px;
+  border: 1px solid #dfe6ef;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 8px 26px #172c4d24;
+  color: #172c4d;
+  font-size: 14px;
+}
+.revenue-tooltip > small {
+  color: #566176;
+  font-size: 12px;
+}
+.revenue-breakdown {
+  margin: 12px 0;
+  display: grid;
+  gap: 9px;
+  font-size: 14px;
+}
+.revenue-breakdown > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+.revenue-breakdown dt {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.revenue-breakdown dt i {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.revenue-breakdown dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+.revenue-breakdown-total {
+  border-top: 1px solid #dfe6ef;
+  padding-top: 10px;
+  font-weight: 700;
+}
+.revenue-period-picker {
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px 24px 20px;
+  flex-wrap: wrap;
+}
+.revenue-period-picker .field {
+  min-width: 190px;
+}
+.crm-dialog.revenue-details-dialog {
+  width: min(1180px, 96vw) !important;
+  max-width: min(1180px, 96vw) !important;
+}
+.revenue-details-dialog > .revenue-breakdown {
+  width: min(100%, 360px);
+}
+.revenue-details-dialog .sales-table {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.revenue-details-dialog td,
+.revenue-details-dialog th {
+  font-size: 14px;
+}
+.revenue-details-dialog .record-link {
+  text-align: left;
+  min-width: 160px;
+  white-space: normal;
+}
+.revenue-detail-export {
+  justify-self: start;
+}
+.overview-legend {
+  display: flex;
+  gap: 18px;
+  justify-content: center;
+  flex-wrap: wrap;
+  font-size: 14px;
+  padding: 12px 20px;
+}
+.overview-legend span {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+.overview-legend i {
+  height: 11px;
+  width: 11px;
+  border-radius: 2px;
+}
+.overview-revenue-totals {
+  padding: 18px 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 18px;
+  border-top: 1px solid #e8edf4;
+  margin-top: 10px;
+}
+.overview-revenue-totals div {
+  display: grid;
+  gap: 6px;
+}
+.overview-revenue-totals span {
+  font-size: 13px;
+  color: #657188;
+}
+.overview-revenue-totals strong {
+  font-size: 19px;
+}
+.overview-calculation-note {
+  margin: 0;
+  padding: 0 24px 18px;
+  color: #68758b;
+  font-size: 13px;
+  line-height: 1.65;
+}
+.overview-data-table {
+  border-top: 1px solid #e8edf4;
+  padding: 18px 24px;
+  font-size: 14px;
+}
+.overview-data-table summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.overview-data-table table {
+  margin-top: 18px;
+}
+.overview-revenue > .error {
+  margin: 18px 24px;
+}
+.dashboard-editor {
+  max-width: 960px !important;
+}
+.dashboard-widget-editor {
+  display: grid;
+  gap: 14px;
+}
+.dashboard-widget-setting {
+  padding: 18px;
+  border: 1px solid #dfe6ef;
+  border-radius: 8px;
+}
+.dashboard-widget-setting > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.dashboard-widget-fields {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  align-items: end;
+  margin-top: 14px;
+}
+.dashboard-widget-fields > .field {
+  flex: 1;
+  min-width: 180px;
+}
+.dashboard-bookings-dialog {
+  max-width: 1050px !important;
+}
+.overview-time-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 200px;
+  overflow: auto;
+  padding-top: 12px;
+}
+.overview-time-slots span {
+  padding: 6px 10px;
+  border-radius: 5px;
+  background: #e8f5ed;
+  color: #206942;
+  font-size: 14px;
+}
+.overview-availability-result {
+  padding: 18px;
+  border: 1px solid #dfe6ef;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.65;
+}
+.overview-availability-fields {
+  display: grid;
+  gap: 18px;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.overview-columns > aside .overview-booking-details {
+  grid-template-columns: 1fr;
+}
+.overview-columns > aside .overview-booking-footer {
+  flex-wrap: wrap;
+}
+@media (max-width: 1100px) {
+  .overview-columns {
+    grid-template-columns: 1fr;
+  }
+  .overview-booking-details {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 650px) {
+  .overview-booking {
+    margin: 0 12px 12px;
+    padding: 15px;
+  }
+  .overview-booking-details {
+    grid-template-columns: 1fr;
+  }
+  .overview-booking-footer {
+    flex-wrap: wrap;
+  }
+  .overview-revenue-controls {
+    padding: 0 16px 18px;
+  }
+  .overview-revenue-totals {
+    grid-template-columns: 1fr 1fr;
+  }
+  .overview-heading {
+    align-items: stretch;
+  }
+  .overview-heading button {
+    justify-content: center;
+  }
+  .overview-columns {
+    gap: 18px;
+  }
+}
+.overview-package-image {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 7px;
+  float: left;
+  margin: 0 10px 8px 0;
+}

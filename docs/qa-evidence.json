@@ -1,0 +1,207 @@
+{
+  "generatedAt": "2026-09-11T00:05:09.854Z",
+  "scope": "Local standalone build, synthetic Neon staging data, loopback S3 fixtures",
+  "sourceBaseline": "7ac422fc23b6527bb34950e73373b07e2f7e29b8",
+  "manifestSha256": "4db40eb7fd910a29d596c420612c68b86b6beae2927a95230910ff7c717513cd",
+  "workflows": [
+    {
+      "name": "pricing-scheduling",
+      "passed": true,
+      "evidence": "retained PASS log",
+      "testedAt": "2026-09-10T22:54:29.225Z",
+      "logSha256": "c5389ddc7d83c8c038cc28ab4466d11f0b40fa5da1e9600c7b57759b894845ae"
+    },
+    {
+      "name": "questionnaires-api",
+      "passed": true,
+      "evidence": "retained PASS log",
+      "testedAt": "2026-09-10T22:57:32.438Z",
+      "logSha256": "74b1b31371f8f427de5991d33584908c2775f2a4f1470d604cb05450bbb28964"
+    },
+    {
+      "name": "checklists",
+      "passed": true,
+      "evidence": "retained PASS log",
+      "testedAt": "2026-09-10T22:58:07.141Z",
+      "logSha256": "ac0420aac66921ce2502a257d3907770ce0be304655224bc6abfbdd7f76e3a07"
+    },
+    {
+      "name": "staff-scheduling",
+      "passed": true,
+      "evidence": "retained PASS log",
+      "testedAt": "2026-09-10T22:59:14.269Z",
+      "logSha256": "8667dc0c33e5c3bad9370f473c8b2a3ba9e5600a4da40b145118789c0cca4747"
+    },
+    {
+      "name": "messages-api",
+      "passed": true,
+      "evidence": "retained PASS log",
+      "testedAt": "2026-09-10T23:08:02.907Z",
+      "logSha256": "b47f7070f0b6a7dddea892b28872824bbd1f52443d8060578e34b39b036f8d76"
+    },
+    {
+      "name": "public-booking",
+      "passed": true,
+      "evidence": "recorded process exit",
+      "testedAt": "2026-09-10T23:21:00.103Z",
+      "logSha256": "f83cd571d64a216143f19fab83d7009530ad394e1ebbded5f3b7a62bdaf109f1"
+    },
+    {
+      "name": "sales",
+      "passed": true,
+      "evidence": "recorded process exit",
+      "testedAt": "2026-09-10T23:20:00.265Z",
+      "logSha256": "cf4bdb2c2674c016f811b70d91da373626b1cf1dd53fb7521cbd9e571fc36a0d"
+    },
+    {
+      "name": "design-collections",
+      "passed": true,
+      "evidence": "retained PASS log",
+      "testedAt": "2026-09-10T23:11:01.410Z",
+      "logSha256": "f53d6f743e755da65c06e035ffc7046d2ec910ffb5ffa368dc23e4fe155f3673"
+    },
+    {
+      "name": "website-integration",
+      "passed": true,
+      "evidence": "retained PASS log",
+      "testedAt": "2026-09-10T23:11:08.077Z",
+      "logSha256": "89d77a56eb78fdf5269a4b3d5f6754200a303696a8201ed4d385d07dc1c1929b"
+    },
+    {
+      "name": "package-manager-actions",
+      "passed": true,
+      "evidence": "retained PASS log",
+      "testedAt": "2026-09-10T23:11:54.770Z",
+      "logSha256": "cce8ae83725e9dead8c9575b836b431a83eaee547aa072ea2e8652c11f103bcf"
+    },
+    {
+      "name": "package-catalog",
+      "passed": true,
+      "evidence": "recorded process exit",
+      "testedAt": "2026-09-10T23:21:18.393Z",
+      "logSha256": "75aef0f91cb60d90c44b17a34ad9ab64bfff51003aafb1154b29aa681827b598"
+    },
+    {
+      "name": "management",
+      "passed": true,
+      "evidence": "recorded process exit",
+      "testedAt": "2026-09-10T23:33:41.813Z",
+      "logSha256": "1bf4bfc36d282979a257d75d2f72a14ace4573865e1b76ebd36401c0be3a5649"
+    },
+    {
+      "name": "venue-autocomplete",
+      "passed": true,
+      "evidence": "recorded process exit",
+      "testedAt": "2026-09-10T23:33:44.683Z",
+      "logSha256": "52ca6a22d0f50c8e859b8c0da06595e9056255fd5897b8aaf21f621d08c3ad1e"
+    },
+    {
+      "name": "manage-menu",
+      "passed": true,
+      "evidence": "recorded process exit",
+      "testedAt": "2026-09-10T23:25:35.549Z",
+      "logSha256": "ebf68a36de0d71a8e91b5c8d4bfde745925928044ec632379f3690d50ebbb3f2"
+    },
+    {
+      "name": "manage-booking",
+      "passed": true,
+      "evidence": "recorded process exit",
+      "testedAt": "2026-09-10T23:26:18.377Z",
+      "logSha256": "08f7bf4f024c75f397d82773157070a1167011af55a8339b7cae292f2b476611"
+    },
+    {
+      "name": "packages",
+      "passed": true,
+      "evidence": "recorded process exit",
+      "testedAt": "2026-09-10T23:27:02.548Z",
+      "logSha256": "437d1b5fd2d4f6d24f9f0fce4927953e8a67ff6ae49f7daee1be085edc5d469b"
+    },
+    {
+      "name": "package-manager",
+      "passed": true,
+      "evidence": "recorded process exit",
+      "testedAt": "2026-09-10T23:27:29.351Z",
+      "logSha256": "e3c116e60ff972675fdfddaa2f553eb390b38dbe6d12322f3f65a0940955366d"
+    },
+    {
+      "name": "package-links",
+      "passed": true,
+      "evidence": "recorded process exit",
+      "testedAt": "2026-09-10T23:27:40.411Z",
+      "logSha256": "5fec73670254d8239f39c6fad095ae7212c2cb3ca0a49f814ff603efa28862c9"
+    },
+    {
+      "name": "overview",
+      "passed": true,
+      "evidence": "recorded process exit",
+      "testedAt": "2026-09-10T23:27:41.695Z",
+      "logSha256": "9887e80fdb8ef8d618668576aa9e695ce90322ad364c145aa0cc5ed8075cc920"
+    },
+    {
+      "name": "overview-redesign",
+      "passed": true,
+      "evidence": "recorded process exit",
+      "testedAt": "2026-09-10T23:27:43.034Z",
+      "logSha256": "9fe523c6586d7922a7c5861d1cf0b65fbafba8c56312da38474f188336cf0334"
+    },
+    {
+      "name": "global-search",
+      "passed": true,
+      "evidence": "recorded process exit",
+      "testedAt": "2026-09-10T23:27:44.240Z",
+      "logSha256": "476461a17bbf93e39aacb9fd372695f9a703494277add174119817efc77214e4"
+    },
+    {
+      "name": "sales-reports",
+      "passed": true,
+      "evidence": "recorded process exit",
+      "testedAt": "2026-09-10T23:27:45.494Z",
+      "logSha256": "9543a9202b2d30a9e26799f26c067b71102911b52032ffe6b4cf5c152ba36b14"
+    },
+    {
+      "name": "workspace-navigation",
+      "passed": true,
+      "evidence": "recorded process exit",
+      "testedAt": "2026-09-10T23:27:46.872Z",
+      "logSha256": "cfb72c6e3e3bc4840c07203c418cbccb871d9e44a68b85c2126950887274cf1d"
+    }
+  ],
+  "platform": {
+    "tests": 12,
+    "passed": 12,
+    "failed": 0,
+    "skipped": 0,
+    "logSha256": "c133e04235dd3350e5ec9ad88f7762bca0468e33f1ee89ce0fe43d5250250f8a"
+  },
+  "browser": {
+    "startTime": "2026-09-11T00:01:54.065Z",
+    "duration": 115651.61,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0,
+    "views": 116,
+    "widths": [
+      1440,
+      390
+    ],
+    "horizontalOverflow": 0
+  },
+  "performance": {
+    "profile": "Cold cache; 1.6 Mbps down, 600 Kbps up, 150 ms latency, 4x CPU slowdown",
+    "lcpMs": 1440,
+    "cls": 0.09571029286669097,
+    "longTaskMs": 1372
+  },
+  "notVerified": [
+    "GitHub hosted workflow execution",
+    "Railway deployment and container startup",
+    "Cloudflare DNS/TLS and public origin gate",
+    "Actual Wasabi bucket policies and copied customer objects",
+    "Real SMTP verification and password recovery",
+    "Legacy customer import and owner mapping",
+    "Timed backup/restore drill",
+    "Large tenant load and cross-browser acceptance",
+    "Remaining SQLite-only legacy harness assertions"
+  ]
+}
