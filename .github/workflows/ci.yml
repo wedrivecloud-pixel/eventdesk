@@ -1,0 +1,86 @@
+name: Validate
+on:
+  pull_request:
+  push:
+    branches: [dev, main]
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: eventdesk_owner
+          POSTGRES_PASSWORD: ci-only-not-a-deployment-secret
+          POSTGRES_DB: eventdesk
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      APP_ENV: development
+      APP_URL: http://localhost:3100
+      PORT: '3100'
+      DATABASE_URL: postgresql://eventdesk_owner:ci-only-not-a-deployment-secret@localhost:5432/eventdesk
+      DIRECT_DATABASE_URL: postgresql://eventdesk_owner:ci-only-not-a-deployment-secret@localhost:5432/eventdesk
+      BETTER_AUTH_SECRET: ci-only-isolated-ephemeral-auth-secret-000000000
+      SEED_SYNTHETIC_DATA: 'true'
+      SEED_PASSWORD: ci-only-ephemeral-test-password-000000000
+      WASABI_ENDPOINT: http://127.0.0.1:3900
+      WASABI_REGION: us-east-1
+      WASABI_BUCKET: eventdesk-qa
+      WASABI_ACCESS_KEY_ID: test-access
+      WASABI_SECRET_ACCESS_KEY: test-secret
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: node scripts/check-source-secrets.mjs
+      - run: npm audit --audit-level=high
+      - run: npm run typecheck
+      - run: npm run test:unit
+      - run: npm run db:migrate
+      - run: npm run db:seed
+      - name: Provision restricted runtime login
+        run: |
+          node scripts/ci-runtime-config.mjs init
+          npx --no-install tsx scripts/provision-runtime-role.ts .env.staging.local
+          node scripts/ci-runtime-config.mjs export
+      - run: node scripts/write-release.mjs "$GITHUB_SHA"
+      - run: npm run build
+      - run: npx --no-install playwright install --with-deps chromium
+      - name: Start built server and test workflows
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          node tests/fixtures/s3-server.mjs > artifacts/storage-fixture.log 2>&1 &
+          node dist/standalone/server.js > artifacts/server.log 2>&1 &
+          for attempt in {1..30}; do
+            if curl --fail --silent http://localhost:3100/api/health/ready; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://localhost:3100/api/health/ready
+          npm run test:platform 2>&1 | tee artifacts/platform-tests.log
+          node scripts/qa-workflows.mjs pricing-scheduling questionnaires-api checklists staff-scheduling messages-api public-booking sales design-collections website-integration package-manager-actions package-catalog management venue-autocomplete manage-menu manage-booking packages package-manager package-links overview overview-redesign global-search sales-reports workspace-navigation
+          npx --no-install playwright test
+      - name: Build portable runtime image
+        run: docker build --target runtime -t eventdesk:qa .
+      - name: Capture QA results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: qa-logs
+          path: |
+            artifacts/server.log
+            artifacts/platform-tests.log
+            artifacts/qa-*.log
+            artifacts/workflows.json
+            artifacts/workflow-history.ndjson
+            artifacts/browser-*.json
+            artifacts/mobile-performance.json
+            artifacts/*-390.png
+          retention-days: 7

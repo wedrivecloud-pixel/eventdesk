@@ -1,0 +1,14 @@
+node_modules
+dist
+.git
+.env*
+!.env.example
+.openai
+.wrangler
+.sites-runtime
+artifacts
+outputs
+work
+backups
+test-results
+playwright-report

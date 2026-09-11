@@ -1,0 +1,70 @@
+.venue-autocomplete {
+  min-width: 0;
+}
+.venue-autocomplete [data-slot='input-group'] {
+  width: 100%;
+  background: white;
+  border-radius: 8px;
+}
+.venue-autocomplete [data-slot='input-group'] input {
+  border: 0;
+  box-shadow: none;
+  min-width: 0;
+  width: 100%;
+}
+.venue-autocomplete > small {
+  color: #596b83;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+.venue-suggestions {
+  background: white;
+  color: #17263d;
+}
+.venue-suggestions [data-slot='combobox-item'] {
+  padding: 10px 30px 10px 12px;
+  gap: 10px;
+  align-items: flex-start;
+}
+.venue-suggestions [data-slot='combobox-item'][data-highlighted] {
+  background: #e9f3f5;
+  color: #17263d;
+}
+.venue-suggestion-text {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.venue-suggestion-text strong {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.venue-suggestion-text small {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: #52627a;
+}
+.venue-search-status {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  padding: 10px 12px;
+  margin: 0;
+  border-top: 1px solid #e3e9f0;
+  color: #52627a;
+}
+.venue-suggestions .venue-google-start {
+  border-top: 1px solid #dbe4ec;
+  border-radius: 0;
+}
+.venue-attribution {
+  padding: 10px 12px 5px;
+  background: white;
+  color: #5e5e5e;
+  font-family: Roboto, sans-serif;
+  font-size: 0.875rem;
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: normal;
+  white-space: nowrap;
+}

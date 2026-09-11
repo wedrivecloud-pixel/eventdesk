@@ -1,0 +1,22 @@
+import { test,expect } from '@playwright/test';
+test('package pricing fields remain editable and visible on a phone',async({browser})=>{
+ if(process.env.SEED_SYNTHETIC_DATA!=='true')throw Error('Synthetic QA required.');
+ const base=process.env.QA_BASE_URL||'http://localhost:3100';
+ const context=await browser.newContext({viewport:{width:390,height:844}});
+ const login=await context.request.post(base+'/api/auth/sign-in/email',{headers:{Origin:base},data:{email:'qa-other@example.test',password:process.env.SEED_PASSWORD}});expect(login.status()).toBe(200);
+ const page=await context.newPage();await page.goto(base+'/?section=packages');
+ await page.getByRole('button',{name:'New',exact:true}).click();
+ await page.getByRole('menuitem',{name:'New package',exact:true}).click();
+ const dialog=page.getByRole('dialog');await expect(dialog).toBeVisible();
+ await dialog.getByRole('tab',{name:'Pricing & Scheduling'}).click();
+ await dialog.getByRole('group',{name:'Require Deposit?'}).getByRole('radio',{name:'Percentage',exact:true}).check();
+ const percentage=dialog.getByRole('spinbutton',{name:'Deposit Percentage',exact:true});
+ await percentage.fill('');await percentage.fill('25');await expect(percentage).toHaveValue('25');
+ await percentage.press('ArrowUp');await expect(percentage).toHaveValue('25.01');await percentage.press('ArrowDown');await expect(percentage).toHaveValue('25');
+ await dialog.getByRole('group',{name:'Charge for extra hours?'}).getByRole('radio',{name:'Yes',exact:true}).check();
+ const hourly=dialog.getByRole('spinbutton',{name:'Hourly Rate',exact:true});await hourly.fill('');await hourly.fill('175');await expect(hourly).toHaveValue('175');
+ const widths=await dialog.getByRole('spinbutton').evaluateAll(nodes=>nodes.filter(n=>(n as HTMLElement).offsetParent!==null).map(n=>n.getBoundingClientRect().width));
+ for(const width of widths)expect(width).toBeGreaterThanOrEqual(55);
+ await page.screenshot({path:'artifacts/package-pricing-mobile.png',fullPage:true});
+ await context.close();
+});

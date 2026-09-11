@@ -1,0 +1,61 @@
+name: Deploy
+on:
+  workflow_run:
+    workflows: [Validate]
+    types: [completed]
+    branches: [dev, main]
+permissions:
+  contents: read
+concurrency:
+  group: deploy-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.workflow_run.head_branch == 'main' && 'production' || 'staging' }}
+    env:
+      APP_ENV: ${{ github.event.workflow_run.head_branch == 'main' && 'production' || 'staging' }}
+      DIRECT_DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL }}
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+      RAILWAY_SERVICE_ID: ${{ vars.RAILWAY_SERVICE_ID }}
+      RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
+      APP_URL: ${{ vars.APP_URL }}
+      DEPLOY_ENABLED: ${{ vars.DEPLOY_ENABLED }}
+      RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
+      WASABI_ENDPOINT: ${{ vars.WASABI_ENDPOINT }}
+      WASABI_REGION: ${{ vars.WASABI_REGION }}
+      BACKUP_BUCKET: ${{ vars.BACKUP_BUCKET }}
+      BACKUP_ACCESS_KEY_ID: ${{ secrets.BACKUP_ACCESS_KEY_ID }}
+      BACKUP_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_SECRET_ACCESS_KEY }}
+      BACKUP_USE_DOCKER: 'true'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Validate release configuration
+        shell: bash
+        run: |
+          test "$DEPLOY_ENABLED" = "true"
+          test -n "$DIRECT_DATABASE_URL"
+          test -n "$RAILWAY_TOKEN"
+          test -n "$RAILWAY_PROJECT_ID"
+          test -n "$RAILWAY_SERVICE_ID"
+          test -n "$RAILWAY_ENVIRONMENT_ID"
+          test -n "$APP_URL"
+      - run: npm ci
+      - name: Verify backup before schema changes
+        run: node scripts/backup.mjs
+      - name: Apply backward-compatible migrations
+        run: npm run db:migrate
+      - name: Deploy the tested commit
+        run: |
+          node scripts/write-release.mjs "$RELEASE_SHA"
+          npx --no-install railway up --ci --project "$RAILWAY_PROJECT_ID" --service "$RAILWAY_SERVICE_ID" --environment "$RAILWAY_ENVIRONMENT_ID"
+      - name: Verify readiness through the public edge
+        run: node scripts/verify-release.mjs

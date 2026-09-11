@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1788587265800,
+      "tag": "0000_unusual_marvel_apes",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1788589028182,
+      "tag": "0001_bright_sersi",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1788590871017,
+      "tag": "0002_silky_sandman",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1788593943296,
+      "tag": "0003_violet_wasp",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1788666837902,
+      "tag": "0004_sloppy_bushwacker",
+      "breakpoints": true
+    }
+  ]
+}
