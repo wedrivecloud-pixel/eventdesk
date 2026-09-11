@@ -48,7 +48,6 @@
   "devDependencies": {
     "@electric-sql/pglite": "0.5.8",
     "@playwright/test": "1.63.0",
-    "@railway/cli": "5.52.0",
     "@tailwindcss/postcss": "4.2.1",
     "@types/node": "22.19.19",
     "@types/nodemailer": "8.0.1",
@@ -70,9 +69,6 @@
   },
   "type": "module",
   "overrides": {
-    "@railway/cli": {
-      "tar": "^7.5.10"
-    },
     "@esbuild-kit/core-utils": {
       "esbuild": "^0.25.12"
     }

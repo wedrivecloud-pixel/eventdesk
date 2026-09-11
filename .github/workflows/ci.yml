@@ -39,6 +39,8 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
+      - name: Verify portable Railway CLI installation
+        run: bash scripts/install-railway-ci.sh
       - run: node scripts/check-source-secrets.mjs
       - run: npm audit --audit-level=high
       - run: npm run typecheck

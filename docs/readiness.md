@@ -58,8 +58,8 @@ The original v35 Sites beta has not been replaced.
 | Neon staging | Created: `steep-mountain-61813886`; branch `br-old-mud-akwe5aw8`; database `eventdesk` |
 | Neon production | Created: `sparkling-cell-16479473`; branch `br-cold-meadow-ard8bmvb`; database `eventdesk`; empty |
 | Database credentials | Ignored local environment files; not committed or placed in documentation |
-| GitHub | Private repository `wedrivecloud-pixel/eventdesk` created; connector read/write access verified and limited to this repository. Source upload and hosted CI verification are in progress. |
-| Railway | CLI available but unauthorized; no service deployment performed |
+| GitHub | Source uploaded to private `wedrivecloud-pixel/eventdesk` on `dev` and `codex/public-launch-migration`; draft PR #1 targets `main`. Initial hosted CI caught a Railway npm installer failure; corrected installation is awaiting hosted verification. `main` update requires approval. |
+| Railway | Private EventDesk project `161c97f4-2f9e-4d52-aba0-a6fbe314f084` created. Staging `2a4e97a2-ad20-42a5-8869-a416645e4f8a` and production `ccc6ebfa-ae7e-4c6b-af61-e24692892d5a` are isolated and empty; no running deployment. |
 | Wasabi | No live bucket/credentials connected; loopback S3 fixture used for QA |
 | Cloudflare | Domain/access not supplied; no DNS, TLS or header-rule mutation performed |
 | SMTP | Not connected; real verification/recovery email remains untested |

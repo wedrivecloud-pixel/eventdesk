@@ -49,6 +49,8 @@ jobs:
           test -n "$RAILWAY_ENVIRONMENT_ID"
           test -n "$APP_URL"
       - run: npm ci
+      - name: Install checksum-verified Railway CLI
+        run: bash scripts/install-railway-ci.sh
       - name: Verify backup before schema changes
         run: node scripts/backup.mjs
       - name: Apply backward-compatible migrations
@@ -56,6 +58,6 @@ jobs:
       - name: Deploy the tested commit
         run: |
           node scripts/write-release.mjs "$RELEASE_SHA"
-          npx --no-install railway up --ci --project "$RAILWAY_PROJECT_ID" --service "$RAILWAY_SERVICE_ID" --environment "$RAILWAY_ENVIRONMENT_ID"
+          railway up --ci --project "$RAILWAY_PROJECT_ID" --service "$RAILWAY_SERVICE_ID" --environment "$RAILWAY_ENVIRONMENT_ID"
       - name: Verify readiness through the public edge
         run: node scripts/verify-release.mjs
