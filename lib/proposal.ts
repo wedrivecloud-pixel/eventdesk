@@ -6,6 +6,7 @@ import {
   type PackageRecord,
 } from './crm';
 import { details } from './manage-config';
+import { proposalDiscountCode } from './proposal-discounts';
 export const proposalTabs = [
   'Overview',
   'Checklists',
@@ -138,6 +139,7 @@ export function proposalSummary(
       })) || [],
     adjustment: quote?.adjustment || 0,
     discount: quote?.discount || 0,
+    discountCode: proposalDiscountCode(quote),
     tax: quote?.tax || 0,
     taxLabel: quote?.taxLabel || 'Tax',
     travel: quote?.travel || 0,
@@ -186,6 +188,7 @@ export type ProposalOption = {
   packages: { id: string; name: string; price: number; included: boolean }[];
 };
 export type ProposalSelections = {
+  discountCode?: string;
   addonIds: string[];
   backdropId: string;
   addonQuantities: Record<string, number>;
@@ -197,5 +200,6 @@ export type ProposalClientData = {
   selections: ProposalSelections;
   revision: string;
   editable: boolean;
+  showDiscountCode: boolean;
   editReason: string;
 };

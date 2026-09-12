@@ -15,6 +15,7 @@ import {
   ordered,
 } from '@/lib/manage-config';
 import { localToday, priceExtra } from '@/lib/manage-pricing';
+import { proposalDiscountCode } from '@/lib/proposal-discounts';
 export type ProposalAccess = NonNullable<
   Awaited<ReturnType<typeof proposalAccess>>
 >;
@@ -141,6 +142,7 @@ export async function proposalClientData(access: ProposalAccess, token = '') {
     });
   }
   const selections: ProposalSelections = {
+    discountCode: proposalDiscountCode(quote),
     addonIds: [
       ...new Set([
         ...(quote?.addonIds ||
@@ -181,8 +183,10 @@ export async function proposalClientData(access: ProposalAccess, token = '') {
       e.updated_at,
       quote || null,
       access.payments,
+      e.operations?.showDiscountCode === true,
     ]),
     editable: !editReason,
+    showDiscountCode: e.operations?.showDiscountCode === true,
     editReason,
   };
   return { client, config, packages, media };

@@ -56,6 +56,7 @@ export type LineItem = {
 };
 export type EventRecord = {
   operations?: {
+    showDiscountCode?: boolean;
     invoice?: import('./proposal').InvoiceDetails;
     quote?: Quote;
     tasks?: {

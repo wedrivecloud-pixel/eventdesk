@@ -261,6 +261,22 @@ export default function Workspace() {
   useEffect(() => {
     void load();
   }, [load]);
+  const savePackage = async (body: Record<string, unknown>): Promise<PackageRecord> => {
+    setError('');
+    setNotice('');
+    const res = await fetch('/api/crm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(60000),
+    });
+    const value = await res.json() as Data & { error?: string; savedPackageId?: string };
+    if (!res.ok) throw new Error(value.error || 'Unable to save package.');
+    const savedPackage = value.packages.find((p) => p.id === value.savedPackageId);
+    if (!savedPackage) throw new Error('Could not retrieve the saved package. Refresh before trying again.');
+    setData(value);
+    return savedPackage;
+  };
   const save: Save = async (body) => {
     setBusy(true);
     setError('');
@@ -931,7 +947,12 @@ export default function Workspace() {
               }}
               item={editingPackage}
               options={business?.services || []}
-              onSave={save}
+              onSave={savePackage}
+              onBusy={setBusy}
+              onSaved={(p) => {
+                setEditingPackage(p);
+                setNotice('Package and photos saved.');
+              }}
               busy={busy}
             />
           )}{' '}

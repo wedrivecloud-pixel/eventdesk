@@ -15,6 +15,7 @@ import type {
   EventAttachment,
 } from '@/lib/proposal';
 import { money } from '@/lib/crm';
+import { ProposalDiscountForm } from './proposal-discount-form';
 
 export function ProposalClient({
   initial,
@@ -41,36 +42,71 @@ export function ProposalClient({
     } | null>(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(''),
-    [notice, setNotice] = useState('');
+    [notice, setNotice] = useState(''),
+    [discountError, setDiscountError] = useState('');
   function change(next: ProposalSelections) {
     setDraft(next);
     setReview(null);
     setError('');
   }
+  async function requestOptions(
+    action: 'quote' | 'save',
+    selections: ProposalSelections,
+    reviewToken?: string,
+  ) {
+    const response = await fetch('/api/proposal/options', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action,
+        eventId: data.summary.id,
+        token,
+        revision: data.revision,
+        selections,
+        reviewToken,
+      }),
+      signal: AbortSignal.timeout(60000),
+    });
+    const value = (await response.json()) as {
+      error?: string;
+      summary: ProposalSummary;
+      reviewToken: string;
+      client: ProposalClientData;
+    };
+    if (!response.ok)
+      throw Error(value.error || 'Unable to update your selections.');
+    return value;
+  }
+  async function applyDiscount(code: string) {
+    if (busy) return;
+    setBusy(true);
+    setDiscountError('');
+    setNotice('');
+    try {
+      const selections = { ...data.selections, discountCode: code };
+      const quote = await requestOptions('quote', selections);
+      const saved = await requestOptions('save', selections, quote.reviewToken);
+      setData(saved.client);
+      setDraft(saved.client.selections);
+      setReview(null);
+      setNotice(
+        code.trim()
+          ? 'Discount applied. Your proposal total and balance have been updated.'
+          : 'Discount removed. Your proposal total and balance have been updated.',
+      );
+    } catch (e) {
+      setDiscountError(
+        e instanceof Error ? e.message : 'Unable to apply this discount.',
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
   async function submit(action: 'quote' | 'save') {
     setBusy(true);
     setError('');
     try {
-      const response = await fetch('/api/proposal/options', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action,
-          eventId: data.summary.id,
-          token,
-          revision: data.revision,
-          selections: draft,
-          reviewToken: review?.reviewToken,
-        }),
-      });
-      const value = (await response.json()) as {
-        error?: string;
-        summary: ProposalSummary;
-        reviewToken: string;
-        client: ProposalClientData;
-      };
-      if (!response.ok)
-        throw Error(value.error || 'Unable to update your selections.');
+      const value = await requestOptions(action, draft, review?.reviewToken);
       if (action === 'quote') setReview(value);
       else {
         setData(value.client);
@@ -110,8 +146,18 @@ export function ProposalClient({
         summary={data.summary}
         business={business}
         attachments={attachments}
+        discountControl={
+          data.editable && data.showDiscountCode ? (
+            <ProposalDiscountForm
+              appliedCode={data.summary.discountCode}
+              busy={busy}
+              error={discountError}
+              onApply={(code) => void applyDiscount(code)}
+            />
+          ) : undefined
+        }
         onManage={
-          data.editable
+          data.editable && !busy
             ? (kind, packageId) => {
                 setPicker({ kind, packageId });
                 setDraft(structuredClone(data.selections));

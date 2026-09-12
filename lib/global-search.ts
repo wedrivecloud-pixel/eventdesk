@@ -5,6 +5,7 @@ import {
   type PackageRecord,
 } from './crm';
 import type { Resource } from './settings';
+import { clientDirectory, type ClientContact } from './clients';
 
 export const searchGroups = [
   'Clients',
@@ -15,13 +16,7 @@ export const searchGroups = [
   'Venues',
 ] as const;
 export type SearchGroup = (typeof searchGroups)[number];
-export type SearchClient = {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  events: EventRecord[];
-};
+export type SearchClient = ClientContact;
 export type SearchTarget =
   | { type: 'client'; client: SearchClient }
   | { type: 'event'; event: EventRecord }
@@ -90,7 +85,6 @@ function digits(phone: string) {
 export function buildSearchIndex(data: Data): SearchEntry[] {
   if (!data.business) return [];
   const entries: SearchEntry[] = [];
-  const clients = new Map<string, SearchClient>();
   for (const event of data.events) {
     if (event.lifecycle === 'Deleted' || event.lifecycle === 'Spam') continue;
     const group =
@@ -119,31 +113,8 @@ export function buildSearchIndex(data: Data): SearchEntry[] {
         eventSearchStatus(event),
       ),
     );
-    // Distinct email addresses must remain distinct, even if the contacts share a name or phone.
-    const email = event.email.trim().toLowerCase();
-    const name = event.client.trim();
-    if (!email && !name && !event.phone.trim()) continue;
-    const key = email
-      ? `email:${email}`
-      : `contact:${normalizeSearch(name)}:${digits(event.phone) || event.id}`;
-    let client = clients.get(key);
-    if (!client) {
-      client = {
-        id: key,
-        name: name || email || event.phone,
-        email: event.email,
-        phone: event.phone,
-        events: [],
-      };
-      clients.set(key, client);
-    }
-    if (!client.phone && event.phone) client.phone = event.phone;
-    client.events.push(event);
   }
-  for (const client of clients.values()) {
-    client.events.sort((a, b) =>
-      (b.date || b.created_at).localeCompare(a.date || a.created_at),
-    );
+  for (const client of clientDirectory(data)) {
     entries.push(
       entry(
         'Clients',
