@@ -263,6 +263,30 @@ assert(
   data.events[0].id === 'booking' && data.events[1].id === 'proposal',
   'index must not reorder source records',
 );
+const {clientDirectory, matchesClient} = load('lib/clients.ts');
+const directory = clientDirectory({ ...data, events: [
+  event('old', {email:' Jose@example.test ', phone:'555-0101', updated_at:'2026-09-01'}),
+  event('recent', {email:'JOSE@example.test', client:'José Updated', phone:'', updated_at:'2026-09-11'}),
+  event('namesake', {email:'other@example.test'}),
+  event('plus-address', {email:'jose+party@example.test'}),
+  event('deleted-newer', {email:'JOSE@example.test', lifecycle:'Deleted', updated_at:'2026-09-12'}),
+], resources: [
+  {id:'customer', kind:'staff', name:'New Customer', archived:0, data:{email:'new@example.test', phone:'555-0103', customerRole:true}},
+  {id:'staff', kind:'staff', name:'Private Staff', archived:0, data:{email:'staff@example.test', customerRole:false}},
+  {id:'archived', kind:'staff', name:'Archived Customer', archived:1, data:{email:'archived@example.test', customerRole:true}},
+]});
+assert.equal(directory.length,4,'Repeated email deduplicates; distinct and plus addresses stay separate');
+const recent=directory.find(c=>c.email==='jose@example.test');
+assert.equal(recent.name,'José Updated');
+assert.equal(recent.phone,'','Do not restore a phone cleared in the latest record');
+assert.equal(recent.events.length,2);
+assert(matchesClient(recent,'jose updated'));
+assert(matchesClient(recent,'JOSE@example.test'));
+assert(matchesClient(recent,'rivera'),'Previous contact names remain searchable');
+assert(!matchesClient(recent,'other@example.test'));
+assert.equal(directory.find(c=>c.email==='new@example.test').events.length,0);
+assert.deepEqual(clientDirectory({...data,business:null}),[]);
+assert.deepEqual(clientDirectory({business:{id:'other'},events:[],resources:[]}),[]);
 console.log(
   'Global search: matching, grouping, contacts, record targets, lifecycle filtering, refresh, and business isolation passed.',
 );

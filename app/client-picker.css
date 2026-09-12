@@ -1,0 +1,14 @@
+.client-picker { display: grid; gap: 12px; padding: 20px; border: 1px solid var(--line, #dce4ef); border-radius: 16px; background: #f8faff; min-width: 0; }
+.client-picker-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.client-picker-heading h3 { margin: 0; font-size: 16px; }
+.client-picker > label { font-size: 14px; color: #4c607e; }
+.client-picker [data-slot='input-group'] { width: 100%; min-height: 44px; background: white; }
+.client-picker [data-slot='input-group-control'] { min-width: 0; }
+.client-picker .field { min-width: 0; }
+.client-picker .field input { width: 100%; min-width: 0; }
+.client-picker-note { margin: 0; color: #526681; font-size: 13px; line-height: 1.5; }
+.client-picker-result { display: grid; gap: 2px; overflow-wrap: anywhere; min-width: 0; padding: 6px; }
+.client-picker-result strong { font-size: 14px; }
+.client-picker-result span, .client-picker-result small { color: #526681; font-size: 13px; }
+.client-picker-popup { background: white; }
+@media (max-width: 600px) { .client-picker { padding: 14px; } .client-picker .form-grid { grid-template-columns: 1fr; } }

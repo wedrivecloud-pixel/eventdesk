@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -22,7 +22,10 @@ import {
   imageUrl,
   type PackageSettings,
 } from '@/lib/package-config';
-import type { Save } from './forms';
+import {
+  PendingPackagePhotos,
+  usePendingPackagePhotos,
+} from './pending-package-photos';
 import { PackageLink } from './package-link';
 import { PackagePricingEditor } from './package-pricing-editor';
 import { PackageNumberInput } from './package-number-input';
@@ -30,9 +33,11 @@ import { packageDurationLabel } from '@/lib/package-pricing';
 function PhotoGallery({
   item,
   onChange,
+  allowUpload = true,
 }: {
   item: PackageRecord;
   onChange: (images: PackageImage[]) => void;
+  allowUpload?: boolean;
 }) {
   const [working, setWorking] = useState(false),
     [error, setError] = useState('');
@@ -110,25 +115,27 @@ function PhotoGallery({
           </div>
         ))}
       </div>
-      <label className={`photo-upload ${working ? 'disabled' : ''}`}>
-        <ImagePlus size={20} />
-        {working
-          ? 'Updating photos…'
-          : item.images?.length
-            ? 'Add photo'
-            : 'Upload primary image'}
-        <input
-          aria-label="Upload package image"
-          type="file"
-          accept="image/png,image/jpeg,image/webp"
-          disabled={working || (item.images?.length || 0) >= 10}
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) void change('PUT', undefined, f);
-            e.target.value = '';
-          }}
-        />
-      </label>
+      {allowUpload && (
+        <label className={`photo-upload ${working ? 'disabled' : ''}`}>
+          <ImagePlus size={20} />
+          {working
+            ? 'Updating photos…'
+            : item.images?.length
+              ? 'Add photo'
+              : 'Upload primary image'}
+          <input
+            aria-label="Upload package image"
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            disabled={working || (item.images?.length || 0) >= 10}
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) void change('PUT', undefined, f);
+              e.target.value = '';
+            }}
+          />
+        </label>
+      )}
       {error && (
         <p className="error" role="alert">
           {error}
@@ -144,16 +151,24 @@ export function PackageEditor({
   onSave,
   busy,
   onImages,
+  onBusy,
+  onSaved,
   defaults = {},
 }: {
   defaults?: { service?: string; group?: string };
   item?: PackageRecord;
   options: string[];
   data: Data;
-  onSave: Save;
+  onSave: (body: Record<string, unknown>) => Promise<PackageRecord>;
   busy: boolean;
   onImages: (id: string, images: PackageImage[]) => void;
+  onBusy: (busy: boolean) => void;
+  onSaved: (item: PackageRecord) => void;
 }) {
+  const pending = usePendingPackagePhotos();
+  const saving = useRef(false);
+  const [createdPackage, setCreatedPackage] = useState<PackageRecord>();
+  const record = item || createdPackage;
   const [tab, setTab] = useState(item ? 'Overview' : 'General'),
     [name, setName] = useState(item?.name || ''),
     [service, setService] = useState(
@@ -276,6 +291,9 @@ export function PackageEditor({
   }
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (busy || saving.current) return;
+    saving.current = true;
+    onBusy(true);
     setError('');
     setSaved(false);
     try {
@@ -284,9 +302,9 @@ export function PackageEditor({
         throw Error('Enter a package title in General before saving.');
       }
       const config = validatePackageSettings(s, packageDurationLabel(s));
-      const ok = await onSave({
+      let savedPackage = await onSave({
         action: 'save_package',
-        id: item?.id,
+        id: record?.id,
         name,
         service,
         price: Math.round(price * 100),
@@ -294,258 +312,304 @@ export function PackageEditor({
         description,
         settings: config,
       });
-      if (ok) setSaved(true);
+      // Retain the exact new ID before uploading, so retries update this package.
+      if (!item) setCreatedPackage(savedPackage);
+      for (const photo of pending.photos) {
+        try {
+          const response = await fetch(
+            `/api/package-images?package=${encodeURIComponent(savedPackage.id)}`,
+            {
+              method: 'PUT',
+              headers: { 'Content-Type': photo.file.type },
+              body: photo.file,
+              signal: AbortSignal.timeout(60000),
+            },
+          );
+          const result = (await response.json()) as {
+            images: PackageImage[];
+            error?: string;
+          };
+          if (!response.ok) throw new Error(result.error || 'Upload failed.');
+          savedPackage = { ...savedPackage, images: result.images };
+          if (!item) setCreatedPackage(savedPackage);
+          onImages(savedPackage.id, result.images);
+          pending.remove(photo.id);
+        } catch {
+          throw new Error(
+            `Package details were saved, but “${photo.file.name}” could not be uploaded. Your remaining photos are still here. Save again to retry, or remove that photo.`,
+          );
+        }
+      }
+      setSaved(true);
+      onSaved(savedPackage);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unable to save.');
+    } finally {
+      saving.current = false;
+      onBusy(false);
     }
   }
   const addons = (data.resources || []).filter(
       (r) => r.kind === 'addons' && !r.archived,
     ),
-    photo = item?.images?.find((i) => i.is_primary) || item?.images?.[0];
+    photo = record?.images?.find((i) => i.is_primary) || record?.images?.[0];
   return (
     <form className="form-stack package-editor" onSubmit={submit}>
-      <Tabs value={tab} onValueChange={(v) => setTab(String(v))}>
-        <TabsList className="package-tabs">
-          {['Overview', 'General', 'Pricing & Scheduling', 'Advanced'].map(
-            (t) => (
-              <TabsTrigger key={t} value={t}>
-                {t}
-              </TabsTrigger>
-            ),
-          )}
-        </TabsList>
-        <TabsContent value="Overview">
-          <div className="package-overview">
-            <div className="package-cover">
-              {photo ? (
-                <img src={imageUrl(photo.id)} alt={photo.alt || name} />
-              ) : (
-                <div className="package-no-image">
-                  <Package size={44} />
-                  <span>No package image yet</span>
-                </div>
-              )}
+      <div inert={busy}>
+        <Tabs value={tab} onValueChange={(v) => setTab(String(v))}>
+          <TabsList className="package-tabs">
+            {['Overview', 'General', 'Pricing & Scheduling', 'Advanced'].map(
+              (t) => (
+                <TabsTrigger key={t} value={t}>
+                  {t}
+                </TabsTrigger>
+              ),
+            )}
+          </TabsList>
+          <TabsContent value="Overview">
+            <div className="package-overview">
+              <div className="package-cover">
+                {photo ? (
+                  <img src={imageUrl(photo.id)} alt={photo.alt || name} />
+                ) : pending.photos[0] ? (
+                  <img
+                    src={pending.photos[0].preview}
+                    alt={`Selected package photo: ${pending.photos[0].file.name}`}
+                  />
+                ) : (
+                  <div className="package-no-image">
+                    <Package size={44} />
+                    <span>No package image yet</span>
+                  </div>
+                )}
+              </div>
+              <div>
+                <span className="service-badge">{s.group || service}</span>
+                <h2>{name || 'Your new package'}</h2>
+                <p className="package-price">
+                  {money(Math.round(price * 100))}
+                  <small>
+                    {' '}
+                    starting rate
+                    {s.unitMode === 'Per unit' &&
+                    s.unitCalculation === 'Multiply package'
+                      ? ` / ${s.unitLabel}`
+                      : ''}
+                  </small>
+                </p>
+                <span className="pill">{s.status}</span>
+                <p className="package-description">
+                  {description || 'Add a description in General.'}
+                </p>
+              </div>
             </div>
-            <div>
-              <span className="service-badge">{s.group || service}</span>
-              <h2>{name || 'Your new package'}</h2>
-              <p className="package-price">
-                {money(Math.round(price * 100))}
-                <small>
-                  {' '}
-                  starting rate
-                  {s.unitMode === 'Per unit' &&
-                  s.unitCalculation === 'Multiply package'
-                    ? ` / ${s.unitLabel}`
-                    : ''}
-                </small>
-              </p>
-              <span className="pill">{s.status}</span>
-              <p className="package-description">
-                {description || 'Add a description in General.'}
-              </p>
+            {item && <PackageLink item={item} />}
+            <div className="package-summary-grid">
+              {[
+                [
+                  'General',
+                  `${s.status} · ${s.group || service}`,
+                  `${(record?.images?.length || 0) + pending.photos.length} photos`,
+                ],
+                [
+                  'Pricing & Scheduling',
+                  `${packageDurationLabel(s)} included · ${s.durationUnit === 'Days' ? (s.extraDays ? money(Math.round(s.dailyRate * 100)) + '/extra day' : 'Fixed starting rate') : s.extraHours ? money(Math.round(s.extraRate * 100)) + '/extra hour' : 'Fixed starting rate'}`,
+                  `${s.depositMode === 'Business default' ? 'Business deposit settings' : s.depositMode === 'None' ? 'No deposit' : s.depositMode === 'Percentage' ? s.depositValue + '% deposit' : money(Math.round(s.depositValue * 100)) + ' deposit'}`,
+                ],
+                [
+                  'Advanced',
+                  s.bookingMode,
+                  `${s.requiredStaff} required staff · ${s.includedAddonIds.length} included add-ons`,
+                ],
+              ].map(([title, line, detail]) => (
+                <section className="package-summary" key={title}>
+                  <h3>{title}</h3>
+                  <p>{line}</p>
+                  <small>{detail}</small>
+                  <button
+                    type="button"
+                    className="secondary"
+                    onClick={() => setTab(title)}
+                  >
+                    Edit {title}
+                    <ArrowRight size={15} />
+                  </button>
+                </section>
+              ))}
             </div>
-          </div>
-          {item && <PackageLink item={item} />}
-          <div className="package-summary-grid">
-            {[
-              [
-                'General',
-                `${s.status} · ${s.group || service}`,
-                `${item?.images?.length || 0} photos`,
-              ],
-              [
-                'Pricing & Scheduling',
-                `${packageDurationLabel(s)} included · ${s.durationUnit === 'Days' ? (s.extraDays ? money(Math.round(s.dailyRate * 100)) + '/extra day' : 'Fixed starting rate') : s.extraHours ? money(Math.round(s.extraRate * 100)) + '/extra hour' : 'Fixed starting rate'}`,
-                `${s.depositMode === 'Business default' ? 'Business deposit settings' : s.depositMode === 'None' ? 'No deposit' : s.depositMode === 'Percentage' ? s.depositValue + '% deposit' : money(Math.round(s.depositValue * 100)) + ' deposit'}`,
-              ],
-              [
-                'Advanced',
-                s.bookingMode,
-                `${s.requiredStaff} required staff · ${s.includedAddonIds.length} included add-ons`,
-              ],
-            ].map(([title, line, detail]) => (
-              <section className="package-summary" key={title}>
-                <h3>{title}</h3>
-                <p>{line}</p>
-                <small>{detail}</small>
-                <button
-                  type="button"
-                  className="secondary"
-                  onClick={() => setTab(title)}
-                >
-                  Edit {title}
-                  <ArrowRight size={15} />
-                </button>
-              </section>
-            ))}
-          </div>
-          {item && (
-            <section className="package-summary">
-              <h3>Upcoming bookings</h3>
-              {data.events
-                .filter(
+            {item && (
+              <section className="package-summary">
+                <h3>Upcoming bookings</h3>
+                {data.events
+                  .filter(
+                    (e) =>
+                      e.status === 'confirmed' &&
+                      e.date >= new Date().toISOString().slice(0, 10) &&
+                      e.items.some((p) => p.id === item.id),
+                  )
+                  .map((e) => (
+                    <p key={e.id}>
+                      {e.date} · {e.title}
+                    </p>
+                  ))}
+                {!data.events.some(
                   (e) =>
                     e.status === 'confirmed' &&
                     e.date >= new Date().toISOString().slice(0, 10) &&
                     e.items.some((p) => p.id === item.id),
-                )
-                .map((e) => (
-                  <p key={e.id}>
-                    {e.date} · {e.title}
+                ) && (
+                  <p className="muted">
+                    No upcoming bookings for this package.
                   </p>
-                ))}
-              {!data.events.some(
-                (e) =>
-                  e.status === 'confirmed' &&
-                  e.date >= new Date().toISOString().slice(0, 10) &&
-                  e.items.some((p) => p.id === item.id),
-              ) && (
-                <p className="muted">No upcoming bookings for this package.</p>
-              )}
-            </section>
-          )}
-        </TabsContent>
-        <TabsContent value="General" className="form-stack">
-          <div className="section-intro">
-            <h3>General</h3>
-            <p>Give clients a clear picture of this package.</p>
-          </div>
-          <label className="field">
-            <span>Package title</span>
-            <input
-              required
-              maxLength={120}
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                setSaved(false);
-              }}
-            />
-          </label>
-          <div className="form-grid">
-            {select(
-              'Service',
-              service,
-              [...new Set([...options, service].filter(Boolean))],
-              setService,
+                )}
+              </section>
             )}
-            {text('group', 'Package group (optional)', 'text', 100)}
-            {choice('status', 'Status', ['Public', 'Private', 'Disabled'])}
-          </div>
-          <p className="muted">
-            Public packages appear in the booking preview. Private packages are
-            unlisted but clients with their direct link can request them.
-            Disabled packages cannot receive new booking requests.
-          </p>
-          <label className="field">
-            <span>Description / what’s included</span>
-            <textarea
-              rows={5}
-              maxLength={3000}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </label>
-          {item ? (
-            <PhotoGallery
-              item={item}
-              onChange={(imgs) => onImages(item.id, imgs)}
-            />
-          ) : (
-            <p className="package-hint">
-              <ImagePlus size={20} />
-              Save this package to upload its primary image and additional
-              photos.
-            </p>
-          )}
-        </TabsContent>
-        <TabsContent value="Pricing & Scheduling" className="form-stack">
-          <PackagePricingEditor
-            settings={s}
-            price={price}
-            onPrice={(n) => {
-              setPrice(n);
-              setSaved(false);
-            }}
-            onChange={(config) => {
-              setS(config);
-              setSaved(false);
-            }}
-            busy={busy}
-          />
-        </TabsContent>
-        <TabsContent value="Advanced" className="form-stack">
-          <div className="section-intro">
-            <h3>Advanced</h3>
-            <p>
-              Control presentation, booking requirements, and included extras.
-            </p>
-          </div>
-          <fieldset>
-            <legend>Booking page</legend>
-            {toggle('showTitle', 'Show package title on booking page')}
-            {text('subheader', 'Subheader')}
-            {choice('bookingMode', 'Booking request mode', [
-              'Booking request',
-              'Proposal request',
-              'Lead form',
-            ])}
-            <p className="muted">
-              All online requests are saved in Leads for your approval, with the
-              selected request type recorded. Dates are reserved only when you
-              confirm a booking.
-            </p>
-          </fieldset>
-          <fieldset>
-            <legend>Requirements</legend>
+          </TabsContent>
+          <TabsContent value="General" className="form-stack">
+            <div className="section-intro">
+              <h3>General</h3>
+              <p>Give clients a clear picture of this package.</p>
+            </div>
+            <label className="field">
+              <span>Package title</span>
+              <input
+                required
+                maxLength={120}
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setSaved(false);
+                }}
+              />
+            </label>
             <div className="form-grid">
-              {number('leadDays', 'Package minimum lead time (days)', 0, 730)}
-              {number('requiredStaff', 'Required staff', 0, 100)}
+              {select(
+                'Service',
+                service,
+                [...new Set([...options, service].filter(Boolean))],
+                setService,
+              )}
+              {text('group', 'Package group (optional)', 'text', 100)}
+              {choice('status', 'Status', ['Public', 'Private', 'Disabled'])}
             </div>
             <p className="muted">
-              Staff assignments and lead time are checked before confirming a
-              booking.
+              Public packages appear in the booking preview. Private packages
+              are unlisted but clients with their direct link can request them.
+              Disabled packages cannot receive new booking requests.
             </p>
-            {toggle('requireBackdrop', 'Require a backdrop')}
-            {s.requireBackdrop &&
-              toggle(
-                'allowSkipBackdrop',
-                'Allow backdrop selection to be skipped',
-              )}
-          </fieldset>
-          <fieldset>
-            <legend>Included add-ons</legend>
-            <p className="muted">
-              These add-ons appear in event quotes at no additional charge.
-            </p>
-            {addons.length ? (
-              <div className="package-choices">
-                {addons.map((a) => (
-                  <label className="check-card" key={a.id}>
-                    <Checkbox
-                      checked={s.includedAddonIds.includes(a.id)}
-                      onCheckedChange={(v) =>
-                        update(
-                          'includedAddonIds',
-                          v
-                            ? [...s.includedAddonIds, a.id]
-                            : s.includedAddonIds.filter((x) => x !== a.id),
-                        )
-                      }
-                    />
-                    <span>{a.name}</span>
-                    <small>Included</small>
-                  </label>
-                ))}
-              </div>
-            ) : (
-              <p>Add your extras under Manage → Add-ons first.</p>
+            <label className="field">
+              <span>Description / what’s included</span>
+              <textarea
+                rows={5}
+                maxLength={3000}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </label>
+            {record && (
+              <PhotoGallery
+                item={record}
+                allowUpload={!!item}
+                onChange={(imgs) => {
+                  if (!item) setCreatedPackage({ ...record, images: imgs });
+                  onImages(record.id, imgs);
+                }}
+              />
             )}
-          </fieldset>
-        </TabsContent>
-      </Tabs>
+            {!item && (
+              <PendingPackagePhotos
+                queue={pending}
+                savedCount={record?.images?.length || 0}
+                disabled={busy}
+              />
+            )}
+          </TabsContent>
+          <TabsContent value="Pricing & Scheduling" className="form-stack">
+            <PackagePricingEditor
+              settings={s}
+              price={price}
+              onPrice={(n) => {
+                setPrice(n);
+                setSaved(false);
+              }}
+              onChange={(config) => {
+                setS(config);
+                setSaved(false);
+              }}
+              busy={busy}
+            />
+          </TabsContent>
+          <TabsContent value="Advanced" className="form-stack">
+            <div className="section-intro">
+              <h3>Advanced</h3>
+              <p>
+                Control presentation, booking requirements, and included extras.
+              </p>
+            </div>
+            <fieldset>
+              <legend>Booking page</legend>
+              {toggle('showTitle', 'Show package title on booking page')}
+              {text('subheader', 'Subheader')}
+              {choice('bookingMode', 'Booking request mode', [
+                'Booking request',
+                'Proposal request',
+                'Lead form',
+              ])}
+              <p className="muted">
+                All online requests are saved in Leads for your approval, with
+                the selected request type recorded. Dates are reserved only when
+                you confirm a booking.
+              </p>
+            </fieldset>
+            <fieldset>
+              <legend>Requirements</legend>
+              <div className="form-grid">
+                {number('leadDays', 'Package minimum lead time (days)', 0, 730)}
+                {number('requiredStaff', 'Required staff', 0, 100)}
+              </div>
+              <p className="muted">
+                Staff assignments and lead time are checked before confirming a
+                booking.
+              </p>
+              {toggle('requireBackdrop', 'Require a backdrop')}
+              {s.requireBackdrop &&
+                toggle(
+                  'allowSkipBackdrop',
+                  'Allow backdrop selection to be skipped',
+                )}
+            </fieldset>
+            <fieldset>
+              <legend>Included add-ons</legend>
+              <p className="muted">
+                These add-ons appear in event quotes at no additional charge.
+              </p>
+              {addons.length ? (
+                <div className="package-choices">
+                  {addons.map((a) => (
+                    <label className="check-card" key={a.id}>
+                      <Checkbox
+                        checked={s.includedAddonIds.includes(a.id)}
+                        onCheckedChange={(v) =>
+                          update(
+                            'includedAddonIds',
+                            v
+                              ? [...s.includedAddonIds, a.id]
+                              : s.includedAddonIds.filter((x) => x !== a.id),
+                          )
+                        }
+                      />
+                      <span>{a.name}</span>
+                      <small>Included</small>
+                    </label>
+                  ))}
+                </div>
+              ) : (
+                <p>Add your extras under Manage → Add-ons first.</p>
+              )}
+            </fieldset>
+          </TabsContent>
+        </Tabs>
+      </div>
       {error && (
         <p className="error" role="alert">
           {error}
@@ -561,12 +625,18 @@ export function PackageEditor({
           ) : (
             <>
               Existing proposals keep their quoted prices and package rules.
-              Photos save immediately.
+              {item
+                ? ' Photos save immediately.'
+                : ' Selected photos upload when you save.'}
             </>
           )}
         </span>
         <button className="primary" disabled={busy}>
-          {busy ? 'Saving…' : item ? 'Save package changes' : 'Save package'}
+          {busy
+            ? 'Saving package and photos…'
+            : record
+              ? 'Save package changes'
+              : 'Save package'}
         </button>
       </div>
     </form>

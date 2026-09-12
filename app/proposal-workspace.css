@@ -251,6 +251,54 @@
   background: #edf8f8;
   margin-bottom: 20px;
 }
+.proposal-discount-form {
+  margin: 20px 0;
+}
+.proposal-client-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  cursor: pointer;
+}
+.proposal-client-option > [data-slot='switch'] { flex: 0 0 32px; width: 32px; }
+.proposal-discount-toggle {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #285fb5;
+  font-size: 0.875rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.proposal-discount-toggle:focus-visible {
+  outline: 2px solid #285fb5;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+.proposal-discount-entry {
+  border: 1px solid #dfe6ee;
+  border-radius: 12px;
+  padding: 18px;
+  margin-top: 8px;
+}
+.proposal-discount-entry > label { display: block; font-weight: 600; margin-bottom: 8px; }
+.proposal-discount-controls { display: flex; gap: 10px; }
+.proposal-discount-controls input {
+  flex: 1; min-width: 0; min-height: 44px; border: 1px solid #cbd5e1;
+  border-radius: 8px; padding: 8px 12px; background: #fff; color: #16263d;
+}
+.proposal-discount-controls button { flex-shrink: 0; }
+.proposal-discount-entry > p { font-size: 0.875rem; margin-top: 10px; }
+.proposal-discount-applied { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 12px; overflow-wrap: anywhere; }
+@media (max-width: 480px) {
+  .proposal-discount-controls { flex-direction: column; }
+}
 .crm-dialog.proposal-options-dialog {
   width: min(980px, 96vw) !important;
   max-height: 90dvh;
@@ -349,6 +397,7 @@
   }
 }
 @media print {
+  .proposal-discount-form { display: none !important; }
   .print-controls,
   .proposal-actions {
     display: none !important;

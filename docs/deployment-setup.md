@@ -59,7 +59,11 @@ and configure GitHub workflow failure notifications for the responsible operator
 ## Railway runtime
 
 Create isolated staging and production environments/services. Use the repository
-Dockerfile and `railway.json`. The runtime listens on Railway's injected PORT;
+Dockerfile. The new-service UI no longer permits opting into legacy Config as Code;
+do not rely on `railway.json` being applied. Configure equivalent builder, health
+probe, timeout and restart policy in Railway or its supported Infrastructure as
+Code, then verify the effective values. See `github-handoff.md` for actual IDs.
+The runtime listens on Railway's injected PORT;
 do not hardcode an external port. Set runtime values from `.env.example`:
 
 - APP_ENV, APP_URL and a random BETTER_AUTH_SECRET of at least 32 characters.

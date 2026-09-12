@@ -1,5 +1,6 @@
 import { money, prettyDate } from '@/lib/crm';
 import Image from 'next/image';
+import type { ReactNode } from 'react';
 import type { ProposalSummary, EventAttachment } from '@/lib/proposal';
 export function ProposalDocument({
   summary: s,
@@ -7,12 +8,14 @@ export function ProposalDocument({
   invoice = false,
   attachments = [],
   onManage,
+  discountControl,
 }: {
   summary: ProposalSummary;
   business: { name: string; email: string; phone: string };
   invoice?: boolean;
   attachments?: EventAttachment[];
   onManage?: (kind: 'addons' | 'backdrops', packageId: string) => void;
+  discountControl?: ReactNode;
 }) {
   return (
     <article className="proposal-paper">
@@ -189,7 +192,8 @@ export function ProposalDocument({
           </tbody>
         </table>
       </div>
-      <dl className="proposal-totals">
+      {!invoice && discountControl}
+      <dl className="proposal-totals" aria-live="polite">
         {s.adjustment !== 0 && (
           <>
             <dt>Flexible pricing</dt>
@@ -198,7 +202,7 @@ export function ProposalDocument({
         )}
         {s.discount > 0 && (
           <>
-            <dt>Discount</dt>
+            <dt>Discount{s.discountCode ? ` (${s.discountCode})` : ''}</dt>
             <dd>−{money(s.discount)}</dd>
           </>
         )}

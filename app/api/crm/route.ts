@@ -68,6 +68,7 @@ export async function POST(req: Request) {
     const db = rawDb();
     const business = await businessFor(user.userId);
     const now = new Date().toISOString();
+    let savedPackageId: string | undefined;
     if (body.action === 'save_business') {
       const name = text(body.name, 'Business name', 100),
         contact = email(body.email),
@@ -138,6 +139,7 @@ export async function POST(req: Request) {
             );
         }
         const encoded = JSON.stringify(config);
+        savedPackageId = body.id ? text(body.id, 'Package ID') : crypto.randomUUID();
         if (body.id) {
           const result = await db
             .prepare(
@@ -161,7 +163,7 @@ export async function POST(req: Request) {
               'INSERT INTO packages(id,business_id,name,service,price,duration,description,created_at,settings) VALUES(?,?,?,?,?,?,?,?,?)',
             )
             .bind(
-              crypto.randomUUID(),
+              savedPackageId,
               bid,
               name,
               service,
@@ -539,7 +541,7 @@ export async function POST(req: Request) {
         if (status === 'confirmed') await addBookingDesigns(bid, id);
       } else throw new Error('Unknown action.');
     }
-    return response(await snapshot(user.userId));
+    return response({ ...await snapshot(user.userId), ...(savedPackageId ? { savedPackageId } : {}) });
   } catch (e) {
     return fail(e);
   }

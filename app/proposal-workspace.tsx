@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Mail, Copy, Eye, ArrowRight, Printer, Trash2 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -368,6 +369,28 @@ export function ProposalWorkspace({
                   Edit retainer amount
                 </button>
               </section>
+              {e.status === 'proposal' && (
+                <section className="proposal-card">
+                  <h3>Client options</h3>
+                  <label className="proposal-client-option" htmlFor="proposal-show-discount">
+                    <Switch
+                      id="proposal-show-discount"
+                      checked={ops.showDiscountCode === true}
+                      disabled={blocked || !active}
+                      onCheckedChange={(showDiscountCode) => void run({
+                        action: 'save_discount_visibility',
+                        eventId: e.id,
+                        showDiscountCode,
+                        previous: ops.showDiscountCode === true,
+                      }, '/api/proposal')}
+                    />
+                    <span>Show discount code field</span>
+                  </label>
+                  <p className="muted">
+                    Let this client enter or change a code. Any discount already applied stays in the total.
+                  </p>
+                </section>
+              )}
               <section className="proposal-card">
                 <h3>Tools</h3>
                 <p>Created {prettyDate(e.created_at.slice(0, 10))}</p>

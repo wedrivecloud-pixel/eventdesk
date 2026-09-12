@@ -2,6 +2,7 @@
 import { durationRules, packageDurationLabel, unitBounds } from '@/lib/package-pricing';
 import { PackageNumberInput } from './package-number-input';
 import { EventExtras } from './event-tools';
+import { ClientPicker } from './client-picker';
 import { VenueAutocomplete } from './venue-autocomplete';
 import { savedVenues } from '@/lib/venue-autocomplete';
 import {
@@ -227,6 +228,7 @@ export function EventForm({
   const [eventTime, setEventTime] = useState(item?.time || defaults.time || '');
   const initialStatus = preview ? 'lead' : defaults.status === 'confirmed' ? 'confirmed' : defaults.status === 'proposal' ? 'proposal' : 'lead';
   const creatingBooking = !item && initialStatus === 'confirmed';
+  const pickingClient = !item && !preview && initialStatus === 'proposal';
   const staff = (data.resources || []).filter(r => r.kind === 'staff' && !r.archived && r.data.staffRole !== false && r.data.staffRole !== 0);
   const choices = packages
     .filter(
@@ -322,8 +324,9 @@ export function EventForm({
           placeholder="e.g. Morgan & Alex’s wedding"
         />
       </Field>
+      {pickingClient && <ClientPicker data={data} defaults={defaults} />}
       <div className="form-grid">
-        <Field label="Client name">
+        {!pickingClient && <><Field label="Client name">
           <input
             name="client"
             required
@@ -347,7 +350,7 @@ export function EventForm({
             maxLength={40}
             defaultValue={item?.phone ?? defaults.phone}
           />
-        </Field>
+        </Field></>}
         <Field label="Lead source (optional)">
           <input
             name="source"

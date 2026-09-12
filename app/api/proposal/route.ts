@@ -51,6 +51,22 @@ export async function POST(req: Request) {
         },
         409,
       );
+    if (body.action === 'save_discount_visibility') {
+      if (typeof body.showDiscountCode !== 'boolean' || typeof body.previous !== 'boolean')
+        throw Error('Choose whether to show the discount code field.');
+      const ops = await operations(id, b.id);
+      if ((ops.showDiscountCode === true) !== body.previous)
+        return json({ error: 'Proposal options changed. Reopen this proposal and try again.' }, 409);
+      const saved = await db.prepare(
+        `INSERT INTO event_operations(event_id,business_id,data)
+         SELECT ?,?,? WHERE EXISTS(SELECT 1 FROM events WHERE id=? AND business_id=? AND status='proposal' AND lifecycle='Active')
+         AND COALESCE((SELECT ed_json(data) FROM event_operations WHERE event_id=? AND business_id=?),'{}')=ed_json(?)
+         ON CONFLICT(event_id) DO UPDATE SET data=excluded.data WHERE event_operations.business_id=excluded.business_id`,
+      ).bind(id, b.id, JSON.stringify({ ...ops, showDiscountCode: body.showDiscountCode }), id, b.id, id, b.id, JSON.stringify(ops)).run();
+      if (!saved.meta.changes)
+        return json({ error: 'Proposal changed. Reopen it and try again.' }, 409);
+      return json(await snapshot(user!.userId));
+    }
     if (body.action === 'add_designs') {
       await addBookingDesigns(b.id, id);
       return json(await snapshot(user!.userId));

@@ -4,6 +4,8 @@ import { proposalClientData, proposalDigest } from '@/db/proposal-options';
 import { proposalSummary, type ProposalSelections } from '@/lib/proposal';
 import { calculateQuote } from '@/lib/quote';
 import { adjustedItems } from '@/lib/manage-pricing';
+import { resolveProposalDiscount } from '@/lib/proposal-discounts';
+import { checkDiscount, discountGuard } from '@/db/manage-guards';
 const result = (value: unknown, status = 200) =>
   Response.json(value, {
     status,
@@ -88,6 +90,10 @@ export async function POST(req: Request) {
     }
     const e = access.event,
       previous = e.operations?.quote;
+    const discount = resolveProposalDiscount(input.discountCode, previous, config.resources);
+    if (!client.showDiscountCode && discount.id !== (previous?.discountId || ''))
+      return result({ error: 'Discount code changes are disabled for this proposal.' }, 403);
+    if (discount.newRule) await checkDiscount(access.bid, e.id, discount.id);
     const quote = calculateQuote(
       e.items,
       config.resources,
@@ -96,7 +102,7 @@ export async function POST(req: Request) {
         ...selections,
         date: e.date,
         time: e.time,
-        discountId: previous?.discountId,
+        discountId: discount.id,
         miles: previous?.miles,
       },
       previous,
@@ -143,12 +149,14 @@ export async function POST(req: Request) {
       clientSelection: nonce,
     });
     const changes = await db.batch([
+      ...(discount.newRule ? [discountGuard(access.bid, e.id, discount.id)] : []),
       db
         .prepare(`INSERT INTO event_operations(event_id,business_id,data)
         SELECT ?,?,? WHERE EXISTS(SELECT 1 FROM events WHERE id=? AND business_id=? AND updated_at=? AND status='proposal' AND lifecycle='Active')
         AND COALESCE((SELECT ed_json(data) FROM event_operations WHERE event_id=? AND business_id=?),'{}')=ed_json(?)
         AND COALESCE((SELECT SUM(amount) FROM payments WHERE event_id=? AND business_id=?),0)=?
         AND (?=1 OR EXISTS(SELECT 1 FROM sales_records WHERE id=? AND business_id=? AND kind='proposal_link' AND archived=0 AND ed_text(data,'$.token')=?))
+        AND (?='' OR EXISTS(SELECT 1 FROM resources WHERE id=? AND business_id=? AND kind='discounts' AND archived=0 AND ed_json(data)=ed_json(?)))
         ON CONFLICT(event_id) DO UPDATE SET data=excluded.data WHERE business_id=excluded.business_id`)
         .bind(
           e.id,
@@ -167,6 +175,10 @@ export async function POST(req: Request) {
           'proposal-link:' + e.id,
           access.bid,
           String(b.token || ''),
+          discount.newRule?.id || '',
+          discount.newRule?.id || '',
+          access.bid,
+          JSON.stringify(discount.newRule?.data || {}),
         ),
       db
         .prepare(
@@ -184,7 +196,7 @@ export async function POST(req: Request) {
           nonce,
         ),
     ]);
-    if (!changes.every((r) => r.meta.changes === 1))
+    if (!changes.slice(-2).every((r) => r.meta.changes === 1))
       return result(
         {
           error: 'This proposal changed. Reload the page before trying again.',
