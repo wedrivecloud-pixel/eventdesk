@@ -1,16 +1,10 @@
 import { test, expect } from '@playwright/test';
+import { signInOwner } from './owner-session';
 
 const base = process.env.QA_BASE_URL || 'http://localhost:3100';
 test('client applies and removes a proposal discount on mobile', async ({ browser }) => {
   const owner = await browser.newContext();
-  if (process.env.QA_AUTH_MODE === 'sites-local') {
-    if (!['localhost', '127.0.0.1'].includes(new URL(base).hostname)) throw Error('Local beta QA requires loopback.');
-    await owner.addCookies([{ name: '__sites_local_auth', value: '1', url: base }]);
-  } else {
-    if (process.env.SEED_SYNTHETIC_DATA !== 'true') throw Error('Synthetic QA required.');
-    const login = await owner.request.post(base + '/api/auth/sign-in/email', { headers: { Origin: base }, data: { email: 'qa-other@example.test', password: process.env.SEED_PASSWORD } });
-    expect(login.status()).toBe(200);
-  }
+  await signInOwner(owner, base);
   const client = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await client.newPage();
   page.setDefaultTimeout(20000);
@@ -62,7 +56,11 @@ test('client applies and removes a proposal discount on mobile', async ({ browse
     await expect(form.getByRole('alert')).toContainText('not available');
     expect((await snapshot()).events.find((e: { id: string }) => e.id === eventId).total).toBe(original.total);
     await form.getByLabel('Discount code', { exact: true }).fill(` ${code.toLowerCase()} `);
-    await form.getByRole('button', { name: 'Apply code' }).click();
+    const [saved] = await Promise.all([
+      page.waitForResponse(response => new URL(response.url()).pathname === '/api/proposal/options' && response.request().method() === 'POST' && response.request().postDataJSON()?.action === 'save'),
+      form.getByRole('button', { name: 'Apply code' }).click(),
+    ]);
+    expect(saved.status(), await saved.text()).toBe(200);
     await expect(form.getByText(code, { exact: true })).toBeVisible();
     await expect(form.getByRole('button', { name: 'Change discount code' })).toHaveAttribute('aria-expanded', 'false');
     await expect(form.getByLabel('Discount code', { exact: true })).toBeHidden();

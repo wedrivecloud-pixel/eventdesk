@@ -1,16 +1,10 @@
 import { test, expect } from '@playwright/test';
+import { signInOwner } from './owner-session';
 
 const base = process.env.QA_BASE_URL || 'http://localhost:3100';
 test('proposal client picker reuses contacts, accepts new clients, and preserves history', async ({ browser }) => {
   const owner = await browser.newContext();
-  if (process.env.QA_AUTH_MODE === 'sites-local') {
-    if (!['localhost', '127.0.0.1'].includes(new URL(base).hostname)) throw Error('Local beta QA requires loopback.');
-    await owner.addCookies([{ name: '__sites_local_auth', value: '1', url: base }]);
-  } else {
-    if (process.env.SEED_SYNTHETIC_DATA !== 'true') throw Error('Synthetic QA required.');
-    const login = await owner.request.post(base + '/api/auth/sign-in/email', { headers: { Origin: base }, data: { email: 'qa-other@example.test', password: process.env.SEED_PASSWORD } });
-    expect(login.status()).toBe(200);
-  }
+  await signInOwner(owner, base);
   const page = await owner.newPage();
   page.setDefaultTimeout(20000);
   const errors: string[] = [];

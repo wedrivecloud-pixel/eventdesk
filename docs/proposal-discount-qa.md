@@ -19,6 +19,20 @@ Each proposal has an **Overview → Client options → Show discount code field*
 
 The migration uses PostgreSQL-compatible JSON comparisons. Its browser test is prepared for synthetic Better Auth QA, but this feature has not been exercised on a deployed Railway/PostgreSQL environment. No schema migrations, credentials, live discount settings, or email delivery were changed.
 
+## PostgreSQL CI regression — September 12, 2026
+
+Hosted run `34699124058` found a high-severity PostgreSQL compatibility issue:
+enable proposal code entry, open the customer link, then apply a valid code.
+The save failed because the upsert tenant guard used an ambiguous `business_id`
+reference. The guard now qualifies `event_operations.business_id` and continues
+to enforce the same tenant match. The browser regression explicitly asserts the
+save returns 200, followed by saved totals, reload, visibility and removal checks.
+
+The expanded browser suite also reached the real sign-in throttle by creating a
+new login for every scenario. Feature tests now reuse an authenticated synthetic
+owner session in memory across fresh contexts. Production authentication and rate
+limits are unchanged. Hosted validation must be rerun for these fixes.
+
 ## Manual preview
 
 1. Enable **Customers may redeem on proposals** on a test discount.

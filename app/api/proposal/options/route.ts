@@ -157,7 +157,7 @@ export async function POST(req: Request) {
         AND COALESCE((SELECT SUM(amount) FROM payments WHERE event_id=? AND business_id=?),0)=?
         AND (?=1 OR EXISTS(SELECT 1 FROM sales_records WHERE id=? AND business_id=? AND kind='proposal_link' AND archived=0 AND ed_text(data,'$.token')=?))
         AND (?='' OR EXISTS(SELECT 1 FROM resources WHERE id=? AND business_id=? AND kind='discounts' AND archived=0 AND ed_json(data)=ed_json(?)))
-        ON CONFLICT(event_id) DO UPDATE SET data=excluded.data WHERE business_id=excluded.business_id`)
+        ON CONFLICT(event_id) DO UPDATE SET data=excluded.data WHERE event_operations.business_id=excluded.business_id`)
         .bind(
           e.id,
           access.bid,

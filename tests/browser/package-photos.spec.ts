@@ -1,4 +1,5 @@
 import { test, expect, type BrowserContext, type Page } from '@playwright/test';
+import { signInOwner } from './owner-session';
 
 const base = process.env.QA_BASE_URL || 'http://localhost:3100';
 const png = Buffer.from(
@@ -11,27 +12,7 @@ const file = (name: string) => ({
   buffer: Buffer.concat([png, Buffer.from(name)]),
 });
 async function signIn(context: BrowserContext) {
-  if (process.env.QA_AUTH_MODE === 'sites-local') {
-    if (!['localhost', '127.0.0.1'].includes(new URL(base).hostname))
-      throw Error('Local beta tests require loopback.');
-    await context.addCookies([
-      { name: '__sites_local_auth', value: '1', url: base },
-    ]);
-  } else {
-    if (process.env.SEED_SYNTHETIC_DATA !== 'true')
-      throw Error('Synthetic QA required.');
-    const response = await context.request.post(
-      base + '/api/auth/sign-in/email',
-      {
-        headers: { Origin: base },
-        data: {
-          email: 'qa-other@example.test',
-          password: process.env.SEED_PASSWORD,
-        },
-      },
-    );
-    expect(response.status()).toBe(200);
-  }
+  await signInOwner(context, base);
 }
 async function newPackage(page: Page, name: string) {
   await page.goto(base + '/?section=packages');
