@@ -1,0 +1,131 @@
+.brand-manager {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+.brand-manager-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+.brand-manager-heading h2 {
+  margin: 0 0 8px;
+}
+.brand-manager-heading p {
+  max-width: 620px;
+}
+.brand-manager-heading > button {
+  flex-shrink: 0;
+}
+.brand-card {
+  padding: 24px;
+  display: grid;
+  gap: 20px;
+}
+.brand-card-identity {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-width: 0;
+}
+.brand-card-identity h3 {
+  margin: 0 0 6px;
+  overflow-wrap: anywhere;
+}
+.brand-card-identity p {
+  margin: 6px 0;
+  overflow-wrap: anywhere;
+}
+.brand-card-identity img {
+  width: 128px;
+  height: 70px;
+  object-fit: contain;
+  border: 1px solid var(--border, #e3e8ef);
+  border-radius: 10px;
+  background: #f7f8fb;
+}
+.brand-monogram {
+  display: grid;
+  place-items: center;
+  width: 70px;
+  height: 70px;
+  font-size: 30px;
+  border: 1px solid #e3e8ef;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+.brand-editor {
+  padding: 24px;
+}
+.brand-fields {
+  border: 0;
+  padding: 0;
+  min-width: 0;
+  display: grid;
+  gap: 20px;
+}
+.brand-package-list {
+  max-height: 320px;
+  overflow: auto;
+  border: 1px solid #e3e8ef;
+  border-radius: 10px;
+  padding: 12px;
+}
+.brand-package-option {
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-start !important;
+  gap: 12px;
+  padding: 9px 0;
+  cursor: pointer;
+}
+.brand-package-option input[type='checkbox'] {
+  width: 17px !important;
+  height: 17px !important;
+  flex: 0 0 17px;
+  margin: 0;
+}
+.brand-package-option small {
+  display: block;
+  color: #64748b;
+}
+.brand-primary-editor {
+  border-top: 1px solid #e3e8ef;
+  padding-top: 20px;
+}
+.brand-manager input[type='color'] {
+  width: 76px;
+  height: 44px;
+  padding: 4px;
+}
+.brand-manager .sales-actions {
+  flex-wrap: wrap;
+}
+.brand-manager .button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: normal;
+}
+.brand-manager .manage-media-grid {
+  grid-template-columns: repeat(auto-fill, minmax(160px, 200px));
+}
+@media (max-width: 700px) {
+  .brand-manager-heading {
+    flex-direction: column;
+  }
+  .brand-card,
+  .brand-editor {
+    padding: 16px;
+  }
+  .brand-card-identity {
+    flex-wrap: wrap;
+  }
+  .brand-manager .sales-actions > * {
+    justify-content: center;
+  }
+  .brand-manager .form-grid {
+    grid-template-columns: 1fr;
+  }
+}

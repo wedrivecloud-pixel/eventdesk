@@ -11,7 +11,7 @@ import PrintButton from './print-button';
 import '@/app/proposal-workspace.css';
 export const dynamic = 'force-dynamic';
 export const metadata = {
-  title: 'Proposal | EventDesk',
+  title: 'Proposal | Eventdeskly',
   robots: { index: false, follow: false },
   referrer: 'no-referrer',
 };
@@ -69,7 +69,7 @@ export default async function Proposal({
       style={{ '--brand-color': String(settings.color) } as React.CSSProperties}
     >
       <div className="print-controls">
-        {access.owner && <Link href="/">← Back to workspace</Link>}
+        {access.owner && <Link href="/app">← Back to workspace</Link>}
         <a href={base + (q.token ? '&' : '') + 'view=proposal'}>Proposal</a>
         <a href={base + (q.token ? '&' : '') + 'view=invoice'}>Invoice</a>
         <PrintButton />
@@ -137,7 +137,7 @@ export default async function Proposal({
             </p>
           </section>
         ))}
-      <footer>{String(settings.footer || 'Prepared with EventDesk')}</footer>
+      <footer>{String(settings.footer || 'Prepared with Eventdeskly')}</footer>
     </main>
   );
 }

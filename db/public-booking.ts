@@ -11,6 +11,7 @@ import {
 } from '@/lib/package-pricing';
 import type { AvailableSlot } from '@/lib/public-booking';
 import { configuration } from './store';
+import { findBrand, brandHasPackage, brandSettings, brandLogoPath, brandSocialLinks } from '@/lib/brands';
 import {
   packageSettings,
   pricePackage,
@@ -33,7 +34,7 @@ import type {
   BookingInput,
   PublicQuote,
 } from '@/lib/public-booking';
-export async function bookingContext(id: string) {
+export async function bookingContext(id: string, brandId = '') {
   const db = rawDb();
   const row = await db
     .prepare(
@@ -61,15 +62,20 @@ export async function bookingContext(id: string) {
     settings,
   };
   const config = await configuration(row.business_id);
+  let brand;
+  try { brand = findBrand(config.resources, brandId); } catch { return null; }
+  if (!brandHasPackage(brand, p.id)) return null;
   return {
     p,
     bid: String(row.business_id),
     business: {
-      name: String(row.business_name),
-      email: String(row.business_email),
-      phone: String(row.business_phone),
+      name: brand?.name ?? String(row.business_name),
+      email: brand?.email ?? String(row.business_email),
+      phone: brand?.phone ?? String(row.business_phone),
     },
     ...config,
+    settings: brandSettings(config.settings, brand),
+    brand,
   };
 }
 export type BookingContext = NonNullable<
@@ -160,12 +166,15 @@ export async function publicBooking(c: BookingContext): Promise<PublicBooking> {
       ),
     )[0];
   return {
+    brandId: c.brand?.id,
     business: {
       id: c.bid,
       ...c.business,
-      color: String(preset?.data.color || c.settings.color),
+      socialLinks: brandSocialLinks(c.brand),
+      color: c.brand ? c.brand.color : String(preset?.data.color || c.settings.color),
       timezone: String(c.settings.timezone),
       hasLogo: Boolean(c.settings.logoVersion),
+      logoUrl: c.brand ? (c.brand.logoId ? brandLogoPath(c.bid,c.brand.id) : '') : undefined,
     },
     package: {
       id: c.p.id,
@@ -179,8 +188,8 @@ export async function publicBooking(c: BookingContext): Promise<PublicBooking> {
     addons: extras('addons'),
     backdrops: extras('backdrops'),
     presentation: {
-      headline: String(preset?.data.headline || c.settings.headline || ''),
-      subheading: String(
+      headline: c.brand ? c.brand.headline : String(preset?.data.headline || c.settings.headline || ''),
+      subheading: c.brand ? c.brand.subheading : String(
         preset?.data.subheading || c.settings.subheading || '',
       ),
       background: String(preset?.data.background || ''),
@@ -375,7 +384,7 @@ export async function bookingQuote(c: BookingContext, input: BookingInput) {
     quote,
     view: {
       ...view,
-      token: await digest(JSON.stringify({ package: c.p.id, input, view })),
+      token: await digest(JSON.stringify({ package: c.p.id, ...(c.brand ? {brand:c.brand} : {}), input, view })),
     },
   };
 }

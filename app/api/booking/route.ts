@@ -60,7 +60,7 @@ export async function GET(req: Request) {
   try {
     const url = new URL(req.url),
       id = text(url.searchParams.get('package'), 'Package', 100),
-      c = await bookingContext(id);
+      c = await bookingContext(id, text(url.searchParams.get('brand') || '', 'Brand', 100, false));
     if (!c)
       return reply(
         { error: 'This package is not available for booking.' },
@@ -92,7 +92,7 @@ export async function POST(req: Request) {
     const raw = await req.text();
     if (raw.length > 16000) return reply({ error: 'Request too large.' }, 413);
     const body = JSON.parse(raw),
-      c = await bookingContext(text(body.packageId, 'Package', 100));
+      c = await bookingContext(text(body.packageId, 'Package', 100), text(body.brandId || '', 'Brand', 100, false));
     if (!c)
       return reply(
         { error: 'This package is not available for booking.' },
@@ -130,6 +130,7 @@ export async function POST(req: Request) {
     const fingerprint = await digest(
       JSON.stringify({
         package: c.p.id,
+        ...(c.brand ? {brandId:c.brand.id} : {}),
         input,
         first,
         last,
@@ -183,6 +184,7 @@ export async function POST(req: Request) {
       );
     const now = new Date().toISOString(),
       operations = JSON.stringify({
+        ...(c.brand ? {brand:c.brand} : {}),
         quote: priced.quote,
         requestDigest: fingerprint,
         sales: { origin: 'Online booking', review: true },

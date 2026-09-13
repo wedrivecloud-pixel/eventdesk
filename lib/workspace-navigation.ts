@@ -89,7 +89,7 @@ export const workspaceGroups: { label: string; items: NavigationItem[] }[] = [
         children: [
           { label: 'Business settings', view: 'Business settings' },
           { label: 'Places & venues', view: 'Places & venues' },
-          { label: 'EventDesk subscription', view: 'Billing' },
+          { label: 'Eventdeskly subscription', view: 'Billing' },
           { label: 'My documents', view: 'Client Documents' },
           { label: 'Referrals', view: 'Refer friends' },
           { label: 'All setup tools', view: 'Manage' },
@@ -138,7 +138,7 @@ export function viewFromSearch(search: string): string {
 }
 export function workspaceHref(view: string): string {
   const v = canonicalView(view);
-  return v === 'Overview' ? '/' : '/?section=' + slug(v);
+  return v === 'Overview' ? '/app' : '/app?section=' + slug(v);
 }
 const titles: Record<string, string> = {
   'To-do List': 'Tasks',
@@ -149,7 +149,7 @@ const titles: Record<string, string> = {
   'Website integration': 'Links & website widgets',
   'Booking engine': 'Booking setup',
   'Payment settings': 'Customer payment settings',
-  Billing: 'EventDesk subscription',
+  Billing: 'Eventdeskly subscription',
   'Client Documents': 'My documents',
   Manage: 'Setup tools',
   'Flex pricing': 'Pricing rules',

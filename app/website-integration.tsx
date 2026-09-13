@@ -58,7 +58,7 @@ export function WebsiteIntegration({ data, onNavigate }: ManageProps) {
       <div>
         <h2>Website Integration</h2>
         <p className="muted">
-          Connect your website to EventDesk with booking links, buttons and
+          Connect your website to Eventdeskly with booking links, buttons and
           embedded tools.
         </p>
       </div>
@@ -104,7 +104,7 @@ export function WebsiteIntegration({ data, onNavigate }: ManageProps) {
         <b>Using these tools on another website</b>
         <p>
           Copy the generated code into your website builder’s HTML or embed
-          block. EventDesk currently permits only its owner; external clients
+          block. Eventdeskly currently permits only its owner; external clients
           and web designers need site access before they can open these tools. A
           booking or appointment request requires your approval.
         </p>
@@ -278,12 +278,12 @@ function IntegrationBuilder({
                       : 'Mini-session booking is not connected. Add an existing mini-session booking URL to generate its link.'
                   : '';
   function downloadGuide() {
-    const text = `${business.name} — ${title}\n\nWebsite link\n${url}\n\n${style}\n${code}\n\nPaste the HTML into your website builder's code/embed block. EventDesk site access applies; client requests require owner approval.\n`;
+    const text = `${business.name} — ${title}\n\nWebsite link\n${url}\n\n${style}\n${code}\n\nPaste the HTML into your website builder's code/embed block. Eventdeskly site access applies; client requests require owner approval.\n`;
     const blob = new Blob([text], { type: 'text/plain;charset=utf-8' }),
       href = URL.createObjectURL(blob),
       a = document.createElement('a');
     a.href = href;
-    a.download = 'eventdesk-' + kind + '-integration.txt';
+    a.download = 'eventdeskly-' + kind + '-integration.txt';
     a.click();
     setTimeout(() => URL.revokeObjectURL(href), 1000);
   }
@@ -333,7 +333,7 @@ function IntegrationBuilder({
           <>
             <p className="capability-note">
               {kind === 'signin'
-                ? 'EventDesk customer accounts are not connected. The business workspace sign-in is separate from customer sign-in.'
+                ? 'Eventdeskly customer accounts are not connected. The business workspace sign-in is separate from customer sign-in.'
                 : 'Mini-session checkout is not connected.'}
             </p>
             <SField

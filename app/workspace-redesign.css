@@ -37,6 +37,12 @@
 .workspace-brand svg {
   flex-shrink: 0;
 }
+.workspace-brand-logo {
+  display: block;
+  width: 100%;
+  max-width: 216px;
+  height: auto;
+}
 .workspace-business {
   color: #dde6f7;
   display: flex;
@@ -341,6 +347,7 @@
   height: 38px;
   display: grid;
   place-items: center;
+  justify-content: center;
   margin: 0;
   background: #edf3ff;
   border-radius: 50%;

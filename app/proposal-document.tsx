@@ -11,7 +11,7 @@ export function ProposalDocument({
   discountControl,
 }: {
   summary: ProposalSummary;
-  business: { name: string; email: string; phone: string };
+  business: { name: string; email: string; phone: string; address?: string; website?: string };
   invoice?: boolean;
   attachments?: EventAttachment[];
   onManage?: (kind: 'addons' | 'backdrops', packageId: string) => void;
@@ -33,6 +33,8 @@ export function ProposalDocument({
             {business.email}
             {business.phone ? ' · ' + business.phone : ''}
           </p>
+          {business.address && <p className="proposal-preserve">{business.address}</p>}
+          {business.website && <p><a href={business.website}>{business.website}</a></p>}
         </div>
         <strong>{s.invoice.number}</strong>
       </header>

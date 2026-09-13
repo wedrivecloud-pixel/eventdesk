@@ -83,6 +83,7 @@ export function SalesWorkspace({
     personal,
     currentStaffId,
     data,
+    onData,
     onOpen,
     onNavigate,
     onCreateEvent,
@@ -581,7 +582,7 @@ export function SalesEditor({
       ) : k === 'payment' ? (
         <>
           <p className="capability-note">
-            Record a payment already received outside EventDesk. No charge will
+            Record a payment already received outside Eventdeskly. No charge will
             be made. Tips are separate from the event balance.
           </p>
           <div className="form-grid">

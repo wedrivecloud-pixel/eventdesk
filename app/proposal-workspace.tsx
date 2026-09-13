@@ -149,7 +149,7 @@ export function ProposalWorkspace({
       (r) => r.kind === 'message' && r.data.eventId === e.id,
     ),
   };
-  const messageProps: SalesProps = {
+  const messageProps: SalesProps = { onData,
     data: scoped,
     onOpen: () => {},
     onNavigate: () => {},
@@ -454,7 +454,7 @@ export function ProposalWorkspace({
               </section>
               <section className="proposal-card">
                 <h3>Staff</h3>
-                <EventPlanning
+                <EventPlanning onData={onData}
                   item={e}
                   data={data}
                   onSave={onSave}
@@ -468,7 +468,7 @@ export function ProposalWorkspace({
         <TabsContent value="Checklists">
           <h3>Event checklists</h3>
           <ChecklistActions event={e} busy={blocked || !active} run={run} />
-          <EventPlanning
+          <EventPlanning onData={onData}
             key={e.id + 'checklists'}
             item={e}
             data={data}
@@ -492,7 +492,7 @@ export function ProposalWorkspace({
               Add matching design collections
             </button>
           </div>
-          <EventPlanning
+          <EventPlanning onData={onData}
             key={e.id + 'designs'}
             item={e}
             data={data}
@@ -508,7 +508,7 @@ export function ProposalWorkspace({
               Choose a questionnaire template to add questions to this proposal.
             </p>
           )}
-          <EventPlanning
+          <EventPlanning onData={onData}
             key={e.id + 'questionnaires'}
             item={e}
             data={data}
@@ -522,7 +522,7 @@ export function ProposalWorkspace({
             Online processing is not connected. Record payments received
             elsewhere below.
           </p>
-          <EventPlanning
+          <EventPlanning onData={onData}
             item={e}
             data={data}
             onSave={onSave}

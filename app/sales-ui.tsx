@@ -35,6 +35,7 @@ export type SalesProps = {
   personal?: boolean;
   currentStaffId?: string;
   data: Data;
+  onData: (data: Data) => void;
   onOpen: (e: EventRecord) => void;
   onNavigate: (s: string) => void;
   edit: (e: Editor) => void;

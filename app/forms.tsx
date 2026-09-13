@@ -5,6 +5,7 @@ import { EventExtras } from './event-tools';
 import { ClientPicker } from './client-picker';
 import { VenueAutocomplete } from './venue-autocomplete';
 import { savedVenues } from '@/lib/venue-autocomplete';
+import { brandRecords } from '@/lib/brands';
 import {
   pricePackage,
   packageSettings,
@@ -286,6 +287,7 @@ export function EventForm({
       initialStatus,
       staffIds: creatingBooking ? f.getAll('staffIds') : undefined,
       title: f.get('title'),
+      brandId: f.get('brandId') ?? item?.operations?.brand?.id ?? '',
       client: f.get('client'),
       email: f.get('email'),
       phone: f.get('phone'),
@@ -315,6 +317,13 @@ export function EventForm({
   return (
     <form onSubmit={submit} className="form-stack">
       {creatingBooking && <p className="capability-note">This creates a confirmed booking and reserves availability for the selected packages.</p>}
+      {(brandRecords(data.resources || []).length > 0 || item?.operations?.brand) && <Field label="Brand">
+        <select name="brandId" defaultValue={item?.operations?.brand?.id || ''}>
+          <option value="">{data.business?.name} (primary brand)</option>
+          {brandRecords(data.resources || []).map(r=><option key={r.id} value={r.id}>{r.name}</option>)}
+          {item?.operations?.brand && !brandRecords(data.resources || []).some(r=>r.id===item.operations?.brand?.id) && <option value={item.operations.brand.id}>{item.operations.brand.name} (archived)</option>}
+        </select>
+      </Field>}
       <Field label="Event title">
         <input
           name="title"

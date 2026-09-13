@@ -22,7 +22,7 @@
       host.dataset.eventdeskReady = 'true';
       const iframe = document.createElement('iframe');
       iframe.src = url.href;
-      iframe.title = host.dataset.eventdeskTitle || 'EventDesk';
+      iframe.title = host.dataset.eventdeskTitle || 'Eventdeskly';
       iframe.loading = 'lazy';
       iframe.style.cssText =
         'display:block;width:100%;border:0;min-height:250px;';

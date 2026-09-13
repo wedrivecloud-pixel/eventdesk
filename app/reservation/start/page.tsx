@@ -1,4 +1,5 @@
 import { notFound, redirect } from 'next/navigation';
+import { BrandSocialLinks } from '@/app/brand-social-links';
 import { requireChatGPTUser } from '@/app/chatgpt-auth';
 import { businessFor } from '@/db/store';
 import { packageCatalog } from '@/db/package-catalog';
@@ -15,7 +16,7 @@ import type { CSSProperties } from 'react';
 import './catalog.css';
 export const dynamic = 'force-dynamic';
 export const metadata = {
-  title: 'Check availability | EventDesk',
+  title: 'Check availability | Eventdeskly',
   robots: { index: false, follow: false },
 };
 const money = (cents: number) =>
@@ -35,7 +36,7 @@ async function OwnerCatalog() {
           Your Check availability page will list the public packages in your
           business.
         </p>
-        <a href="/">Open EventDesk</a>
+        <a href="/">Open Eventdeskly</a>
       </main>
     );
   redirect(availabilityPath(String(business.id)));
@@ -47,6 +48,7 @@ export default async function Page({
     business?: string | string[];
     service?: string | string[];
     group?: string | string[];
+    brand?: string | string[];
   }>;
 }) {
   const query = await searchParams;
@@ -57,7 +59,7 @@ export default async function Page({
     query.business.length > 100
   )
     notFound();
-  for (const key of ['service', 'group'] as const)
+  for (const key of ['service', 'group', 'brand'] as const)
     if (
       query[key] !== undefined &&
       (typeof query[key] !== 'string' || query[key].length > 100)
@@ -66,6 +68,7 @@ export default async function Page({
   const catalog = await packageCatalog(query.business, {
     service: query.service as string | undefined,
     group: query.group as string | undefined,
+    brand: query.brand as string | undefined,
   });
   if (!catalog) notFound();
   const { business, groups } = catalog,
@@ -85,7 +88,7 @@ export default async function Page({
       }
     >
       <header className="catalog-header">
-        <a href={availabilityPath(business.id)} className="catalog-brand">
+        <a href={availabilityPath(business.id,catalog.brandId)} className="catalog-brand">
           {catalog.logo ? (
             <img src={catalog.logo} alt="" />
           ) : (
@@ -101,7 +104,7 @@ export default async function Page({
       <main className="catalog-main">
         <div className="catalog-intro">
           {query.service && (
-            <a href={availabilityPath(business.id)}>← All packages</a>
+            <a href={availabilityPath(business.id,catalog.brandId)}>← All packages</a>
           )}
           <p className="catalog-eyebrow">Choose your package</p>
           <h1>
@@ -199,7 +202,7 @@ export default async function Page({
                         <article className="catalog-card" key={p.id}>
                           <a
                             className="catalog-photo"
-                            href={'/book/' + encodeURIComponent(p.id)}
+                            href={'/book/' + encodeURIComponent(p.id) + (catalog.brandId ? '?' + new URLSearchParams({ brand: catalog.brandId }) : '')}
                             aria-label={'View ' + p.name}
                           >
                             {p.image ? (
@@ -222,7 +225,7 @@ export default async function Page({
                           </a>
                           <div className="catalog-card-body">
                             <h3 className={p.showTitle ? '' : 'sr-only'}>
-                              <a href={'/book/' + encodeURIComponent(p.id)}>
+                              <a href={'/book/' + encodeURIComponent(p.id) + (catalog.brandId ? '?' + new URLSearchParams({ brand: catalog.brandId }) : '')}>
                                 {p.name}
                               </a>
                             </h3>
@@ -258,7 +261,7 @@ export default async function Page({
                             )}
                             <a
                               className="catalog-choose"
-                              href={'/book/' + encodeURIComponent(p.id)}
+                              href={'/book/' + encodeURIComponent(p.id) + (catalog.brandId ? '?' + new URLSearchParams({ brand: catalog.brandId }) : '')}
                             >
                               {catalog.cta}
                               <ArrowRight size={17} />
@@ -293,7 +296,8 @@ export default async function Page({
               </a>
             )}
           </div>
-          <p>Booking requests powered by EventDesk</p>
+          <BrandSocialLinks links={business.socialLinks} />
+          <p>Booking requests powered by Eventdeskly</p>
         </footer>
       </main>
     </div>

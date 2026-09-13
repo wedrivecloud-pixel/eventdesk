@@ -1,5 +1,6 @@
 import { rawDb } from './raw';
 import { configuration } from './store';
+import { brandSettings } from '@/lib/brands';
 import { proposalAccess } from './proposals';
 import {
   proposalSummary,
@@ -31,6 +32,7 @@ export async function proposalDigest(value: unknown) {
 export async function proposalClientData(access: ProposalAccess, token = '') {
   const { event: e, bid } = access,
     config = await configuration(bid);
+  config.settings = brandSettings(config.settings, e.operations?.brand);
   const ids = JSON.stringify(e.items.map((p) => p.id));
   const packages = (
     await rawDb()

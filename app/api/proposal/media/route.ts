@@ -11,7 +11,9 @@ export async function GET(req: Request) {
     let key = '',
       mime = '';
     if (q.get('logo') === '1') {
-      key = access.bid + '/logo';
+      const brand = access.event.operations?.brand;
+      if (brand && !brand.logoId) return new Response('Not found', {status:404});
+      key = brand ? access.bid + '/media/' + brand.logoId : access.bid + '/logo';
     } else if (q.get('package')) {
       const pid = q.get('package');
       if (!id || !access.event.items.some((p) => p.id === pid))

@@ -1,5 +1,6 @@
 import type { BookingSlot, PricingTier } from './package-pricing';
 import type { FormField } from './manage-config';
+import type { BrandSocialLink } from './brands';
 export type PublicExtra = {
   id: string;
   name: string;
@@ -13,9 +14,9 @@ export type PublicExtra = {
   category: string;
 };
 export type AvailableSlot = { time: string; label: string; minutes: number };
-export const availabilityPath = (businessId: string) =>
-  '/reservation/start?' + new URLSearchParams({ business: businessId });
+export { brandBookingPath as availabilityPath } from './brands';
 export type PublicBooking = {
+  brandId?: string;
   business: {
     id: string;
     name: string;
@@ -24,6 +25,8 @@ export type PublicBooking = {
     color: string;
     timezone: string;
     hasLogo: boolean;
+    logoUrl?: string;
+    socialLinks?: BrandSocialLink[];
   };
   package: {
     id: string;

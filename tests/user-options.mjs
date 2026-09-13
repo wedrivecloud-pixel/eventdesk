@@ -564,7 +564,7 @@ if (process.argv.includes('--local')) {
   assert.equal(state.identity.email, 'seedy@sites.test');
   assert(Array.isArray(state.documents));
   const html = await fetch(base + '/').then((r) => r.text());
-  assert(html.includes('EventDesk'));
+  assert(html.includes('Eventdeskly'));
   console.log(
     'PASS: local account endpoint authenticated response and anonymous rejection, using read-only requests.',
   );

@@ -41,7 +41,7 @@ export async function proposalAccess(id: string, token = '') {
   const payments = (
     await rawDb()
       .prepare(
-        'SELECT id,event_id,amount,tip,method,date FROM payments WHERE event_id=? AND business_id=? ORDER BY date',
+        "SELECT id,event_id,amount,tip,method,date FROM payments WHERE event_id=? AND business_id=? AND voided_at='' ORDER BY date",
       )
       .bind(id, row.business_id)
       .all<Payment>()
@@ -52,9 +52,11 @@ export async function proposalAccess(id: string, token = '') {
     bid: String(row.business_id),
     owner,
     business: {
-      name: String(row.business_name),
-      email: String(row.business_email),
-      phone: String(row.business_phone || ''),
+      name: e.operations?.brand?.name ?? String(row.business_name),
+      email: e.operations?.brand?.email ?? String(row.business_email),
+      phone: e.operations?.brand?.phone ?? String(row.business_phone || ''),
+      address: e.operations?.brand?.address || '',
+      website: e.operations?.brand?.website || '',
     },
   };
 }

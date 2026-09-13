@@ -1,0 +1,75 @@
+.payment-void-dialog[data-slot='alert-dialog-content'] {
+  width: calc(100vw - 32px);
+  max-width: 480px;
+  max-height: 90dvh;
+  overflow-y: auto;
+  padding: 24px;
+}
+.payment-void-summary,
+.payment-void-audit {
+  display: grid;
+  gap: 6px;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+}
+.payment-void-summary {
+  padding: 16px;
+  background: #f5f7fb;
+  border-radius: 12px;
+}
+.payment-void-summary small,
+.payment-void-audit small {
+  color: #64748b;
+}
+.payment-void-actions,
+.payment-row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.payment-void-trigger.secondary {
+  font-size: 12px;
+  padding: 8px 12px;
+  white-space: nowrap;
+}
+.payment-void-confirm.primary {
+  background: #b42318;
+  color: white;
+}
+.payment-void-confirm.primary:hover:not(:disabled) {
+  background: #912018;
+}
+.payment-void-history {
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+.payment-void-history summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.payment-void-history .payment-row {
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.payment-void-history .payment-void-audit {
+  flex-basis: 100%;
+}
+.payment-void-history > p {
+  margin-top: 12px;
+  color: #64748b;
+  font-size: 13px;
+}
+@media (max-width: 480px) {
+  .payment-row {
+    flex-wrap: wrap;
+  }
+  .payment-row-actions {
+    margin-left: auto;
+  }
+  .payment-void-dialog[data-slot='alert-dialog-content'] {
+    padding: 18px;
+  }
+}

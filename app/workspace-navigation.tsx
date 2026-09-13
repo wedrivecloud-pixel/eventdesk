@@ -1,5 +1,6 @@
 'use client';
 import { useState, type MouseEvent } from 'react';
+import { AppLogo } from '@/components/app-logo';
 import {
   House,
   CalendarDays,
@@ -157,22 +158,9 @@ export function WorkspaceNavigation({
           className="workspace-brand"
           href={workspaceHref('Overview')}
           onClick={(e) => localNavigation(e, 'Overview', navigate)}
-          aria-label="EventDesk overview"
+          aria-label="Eventdeskly overview"
         >
-          <svg
-            width="36"
-            height="32"
-            viewBox="0 0 36 32"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path d="M3 5H19V10H8V14H17V19H8V23H19V28H3V5Z" fill="#6091FF" />
-            <path
-              d="M18 9H23C30 9 33 13 33 19C33 25 30 29 23 29H17V24H23C26 24 28 22 28 19C28 16 26 14 23 14H18V9Z"
-              fill="#315CF5"
-            />
-          </svg>
-          <span>EventDesk</span>
+          <AppLogo className="workspace-brand-logo" />
         </a>
         {isMobile && (
           <button

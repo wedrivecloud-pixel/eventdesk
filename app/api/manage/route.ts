@@ -1,6 +1,8 @@
 import { validateStaffAssignment, staffConflictGuard } from '@/db/staffing';
 import { getChatGPTUser } from '@/app/chatgpt-auth';
 import { rawDb } from '@/db/raw';
+import { voidRecordedPayment } from '@/db/payment-voids';
+import { brandAction } from '@/db/brands';
 import { designAction } from '@/db/design-collections';
 import { staffSchedulingAction } from '@/db/appointment-scheduling';
 import { businessFor, snapshot, operations, configuration } from '@/db/store';
@@ -42,7 +44,9 @@ export async function POST(req: Request) {
     const bid = business.id,
       db = rawDb(),
       now = new Date().toISOString();
-    if (await staffSchedulingAction(bid, body)) {
+    if (await brandAction(bid, body)) {
+      // Brand identities and their package/media assignments belong to this owner.
+    } else if (await staffSchedulingAction(bid, body)) {
       // Staff scheduling is scoped to this business.
     } else if (await designAction(bid, body)) {
       // Collection actions and booking choices are scoped to the owning business.
@@ -221,6 +225,13 @@ export async function POST(req: Request) {
         .bind(id, bid)
         .first<Record<string, unknown>>();
       if (!event) return response({ error: 'Event not found.' }, 404);
+      if (body.action === 'void_payment') {
+        const result = await voidRecordedPayment(bid, id, body.paymentId, body.reason, user);
+        if (result === 'not_found') return response({ error: 'Payment not found.' }, 404);
+        if (result === 'already_voided')
+          return response({ error: 'This payment has already been voided. Refresh to see the updated history.' }, 409);
+        return response(await snapshot(user.userId));
+      }
       const ops = await operations(id, bid);
       let patch: Record<string, unknown> = {};
       if (body.action === 'apply_template') {
@@ -380,7 +391,7 @@ export async function POST(req: Request) {
           throw new Error('Unknown payment method.');
         const r = await db
           .prepare(
-            'INSERT INTO payments(id,business_id,event_id,amount,method,date,reference,created_at,tip) SELECT ?,?,?,?,?,?,?,?,? WHERE ? <= (SELECT total FROM events WHERE id=? AND business_id=?)-(SELECT COALESCE(SUM(amount),0) FROM payments WHERE event_id=? AND business_id=?)',
+            "INSERT INTO payments(id,business_id,event_id,amount,method,date,reference,created_at,tip) SELECT ?,?,?,?,?,?,?,?,? WHERE ? <= (SELECT total FROM events WHERE id=? AND business_id=?)-(SELECT COALESCE(SUM(amount),0) FROM payments WHERE event_id=? AND business_id=? AND voided_at='')",
           )
           .bind(
             crypto.randomUUID(),

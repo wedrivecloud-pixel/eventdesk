@@ -145,7 +145,7 @@ export function QuestionnaireLibrary({
           <DialogDescription>
             {sample
               ? sample.description
-              : 'Create your own questionnaire or start with an editable EventDesk sample.'}
+              : 'Create your own questionnaire or start with an editable Eventdeskly sample.'}
           </DialogDescription>
         </DialogHeader>
         {sample ? (
@@ -205,7 +205,7 @@ export function QuestionnaireLibrary({
             </section>
             <div className="panel-heading">
               <div>
-                <h3>EventDesk samples</h3>
+                <h3>Eventdeskly samples</h3>
                 <p className="muted">
                   Preview a sample, then customize and save a copy to your
                   templates.

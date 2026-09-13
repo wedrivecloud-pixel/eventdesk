@@ -131,7 +131,7 @@ export async function DELETE(req: Request) {
   if (
     resources.some((r) => {
       const d = details(r);
-      return d.images.includes(id || '') || d.attachments.includes(id || '');
+      return (r.kind === 'brands' && r.data.logoId === id) || d.images.includes(id || '') || d.attachments.includes(id || '');
     })
   )
     return json(

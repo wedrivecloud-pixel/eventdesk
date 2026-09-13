@@ -6,9 +6,10 @@ import { packageSettings } from '@/lib/package-config';
 import { managerGroups } from '@/lib/package-manager';
 import type { Data, PackageRecord } from '@/lib/crm';
 import { catalogPresentation } from '@/lib/catalog-presentation';
+import { findBrand, brandHasPackage, brandLogoPath, brandSocialLinks } from '@/lib/brands';
 export async function packageCatalog(
   businessId: string,
-  scope: { service?: string; group?: string } = {},
+  scope: { service?: string; group?: string; brand?: string } = {},
 ) {
   const db = rawDb();
   const business = await db
@@ -51,6 +52,8 @@ export async function packageCatalog(
       .all<{ id: string; package_id: string; alt: string }>(),
     configuration(business.id),
   ]);
+  let brand;
+  try { brand = findBrand(config.resources, scope.brand); } catch { return null; }
   if (
     scope.group !== undefined &&
     !config.resources.some(
@@ -74,7 +77,7 @@ export async function packageCatalog(
     }))
     .filter(
       (p) =>
-        p.settings.status === 'Public' &&
+        p.settings.status === 'Public' && brandHasPackage(brand, p.id) &&
         services.includes(p.service) &&
         (scope.group === undefined || (p.settings.group || '') === scope.group),
     );
@@ -126,15 +129,17 @@ export async function packageCatalog(
     background: String(preset?.data.background || ''),
     business: {
       id: business.id,
-      name: business.name,
-      email: business.email,
-      phone: business.phone,
+      name: brand?.name ?? business.name,
+      email: brand?.email ?? business.email,
+      phone: brand?.phone ?? business.phone,
+      socialLinks: brandSocialLinks(brand),
     },
-    headline: String(preset?.data.headline || config.settings.headline),
-    subheading: String(preset?.data.subheading || config.settings.subheading),
-    color: String(preset?.data.color || config.settings.color),
+    brandId: brand?.id || '',
+    headline: brand ? brand.headline : String(preset?.data.headline || config.settings.headline),
+    subheading: brand ? brand.subheading : String(preset?.data.subheading || config.settings.subheading),
+    color: brand ? brand.color : String(preset?.data.color || config.settings.color),
     logo:
-      config.settings.logoVersion && first
+      brand ? (brand.logoId ? brandLogoPath(business.id,brand.id) : '') : config.settings.logoVersion && first
         ? '/api/booking/image?' +
           new URLSearchParams({ package: first.id, logo: '1' })
         : '',

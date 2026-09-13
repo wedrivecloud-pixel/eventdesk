@@ -382,7 +382,7 @@ export const manageModules: Record<string, Module> = {
   },
   payment_methods: {
     label: 'Payment options',
-    description: 'Payment instructions for funds collected outside EventDesk.',
+    description: 'Payment instructions for funds collected outside Eventdeskly.',
     fields: [
       toggle('enabled', 'Show this payment option', true),
       f('instructions', 'Payment instructions', 'textarea'),

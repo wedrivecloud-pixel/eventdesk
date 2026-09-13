@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { VoidPaymentButton, PaymentVoidAudit } from './payment-void';
 import { money, prettyDate } from '@/lib/crm';
 import {
   activeEvent,
@@ -38,11 +39,12 @@ export function SalesAnalytics(p: SalesProps & { view: string }) {
   );
 }
 function Payments(p: SalesProps) {
+  const [showVoided, setShowVoided] = useState(false);
   const [q, setQ] = useState(''),
     [method, setMethod] = useState('All methods'),
     [from, setFrom] = useState(''),
     [to, setTo] = useState('');
-  const rows = (p.data.payments || []).filter(
+  const rows = [...(p.data.payments || []), ...(showVoided ? p.data.voidedPayments || [] : [])].sort((a,b) => b.date.localeCompare(a.date) || (b.created_at || '').localeCompare(a.created_at || '')).filter(
     (r) =>
       (method === 'All methods' || r.method === method) &&
       (!from || r.date >= from) &&
@@ -51,6 +53,7 @@ function Payments(p: SalesProps) {
         .toLowerCase()
         .includes(q.toLowerCase()),
   );
+  const effectiveRows = rows.filter(r => !r.voided_at);
   return (
     <section className="panel">
       <SHeader title="Recorded payments">
@@ -79,6 +82,7 @@ function Payments(p: SalesProps) {
                 'Reference',
                 'Payment USD',
                 'Tip USD',
+                'Status', 'Voided at', 'Voided by', 'Void reason',
               ],
               ...rows.map((r) => [
                 r.date,
@@ -87,6 +91,7 @@ function Payments(p: SalesProps) {
                 r.reference,
                 r.amount / 100,
                 (r.tip || 0) / 100,
+                r.voided_at ? 'Voided' : 'Recorded', r.voided_at || '', r.voided_by_name || '', r.void_reason || '',
               ]),
             ])
           }
@@ -115,25 +120,26 @@ function Payments(p: SalesProps) {
         />
         <SField label="From" type="date" value={from} onChange={setFrom} />
         <SField label="To" type="date" value={to} onChange={setTo} />
+        <SToggle label="Show voided payments" value={showVoided} onChange={setShowVoided} />
       </div>
       <div className="sales-metrics">
         <article>
           <span>Payments</span>
-          <strong>{money(rows.reduce((n, r) => n + r.amount, 0))}</strong>
+          <strong>{money(effectiveRows.reduce((n, r) => n + r.amount, 0))}</strong>
         </article>
         <article>
           <span>Tips</span>
-          <strong>{money(rows.reduce((n, r) => n + (r.tip || 0), 0))}</strong>
+          <strong>{money(effectiveRows.reduce((n, r) => n + (r.tip || 0), 0))}</strong>
         </article>
         <article>
           <span>Total received</span>
           <strong>
-            {money(rows.reduce((n, r) => n + r.amount + (r.tip || 0), 0))}
+            {money(effectiveRows.reduce((n, r) => n + r.amount + (r.tip || 0), 0))}
           </strong>
         </article>
       </div>
       <STable
-        headers={['Date', 'Event', 'Method', 'Reference', 'Payment', 'Tip']}
+        headers={['Date', 'Event', 'Method', 'Reference', 'Payment', 'Tip', 'Status', 'Action']}
         rows={rows.map((r) => {
           const e = p.data.events.find((e) => e.id === r.event_id);
           return [
@@ -149,6 +155,8 @@ function Payments(p: SalesProps) {
             r.reference,
             money(r.amount),
             money(r.tip || 0),
+            r.voided_at ? <PaymentVoidAudit payment={r} /> : 'Recorded',
+            !r.voided_at && e ? <VoidPaymentButton payment={r} event={e} data={p.data} onData={p.onData} disabled={p.busy} /> : '—',
           ];
         })}
       />
@@ -484,7 +492,7 @@ function Calendar(p: SalesProps) {
       lines = [
         'BEGIN:VCALENDAR',
         'VERSION:2.0',
-        'PRODID:-//EventDesk//Sales Calendar//EN',
+        'PRODID:-//Eventdeskly//Sales Calendar//EN',
         'CALSCALE:GREGORIAN',
         ...items.flatMap((i) => [
           'BEGIN:VEVENT',
@@ -508,7 +516,7 @@ function Calendar(p: SalesProps) {
     );
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'eventdesk-calendar.ics';
+    a.download = 'eventdeskly-calendar.ics';
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }

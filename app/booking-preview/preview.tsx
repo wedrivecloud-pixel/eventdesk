@@ -22,7 +22,7 @@ export default function BookingPreview({
       className="booking-preview"
       style={{ '--brand-color': String(settings.color) } as React.CSSProperties}
     >
-      <a className="text-button" href="/">
+      <a className="text-button" href="/app">
         ← Back to workspace
       </a>
       <p className="preview-label">
@@ -58,7 +58,7 @@ export default function BookingPreview({
         <section className="panel">
           <h2>Inquiry saved.</h2>
           <p>It is now in your business’s Leads list.</p>
-          <a href="/" className="primary">
+          <a href="/app" className="primary">
             Return to workspace
           </a>
         </section>

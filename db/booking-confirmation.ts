@@ -62,3 +62,48 @@ export async function bookingConfirmationGuard(
     ],
   };
 }
+
+// An extra can extend an existing reservation. Recheck only the occupied
+// window, without applying new-booking notice rules to an existing booking.
+export async function bookingExtrasGuard(
+  bid: unknown,
+  id: unknown,
+  event: { date: string; time: string; items: LineItem[] },
+  previous: LineItem[],
+  staffIds: string[],
+  backdropId: string,
+  config: { settings: Settings; resources: Resource[] },
+) {
+  for (const p of event.items)
+    if (
+      p.packageSettings?.requireBackdrop &&
+      !p.packageSettings.allowSkipBackdrop &&
+      !backdropId
+    )
+      throw Error(p.name + ' requires a backdrop.');
+  if (
+    event.items.every(
+      (p) =>
+        (p.extraMinutes || 0) ===
+        (previous.find((old) => old.id === p.id)?.extraMinutes || 0),
+    )
+  )
+    return { sql: '0', args: [] };
+  validatePackageSchedule(event.items, event.date, event.time, backdropId);
+  await validateStaffAssignment(bid, id, event, staffIds);
+  const staff = staffConflictGuard(bid, id, event, staffIds);
+  const inventory = inventoryGuard(bid, id, event, config.resources);
+  const limit = Number(config.settings.dailyLimit);
+  return {
+    sql: `((? != 0 AND ${capacityConflictSql}) OR ${staff.sql} OR ${inventory.sql})`,
+    args: [
+      limit,
+      JSON.stringify(eventDates(event.items, event.date)),
+      bid,
+      id,
+      limit,
+      ...staff.args,
+      ...inventory.args,
+    ],
+  };
+}

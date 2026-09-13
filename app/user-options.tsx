@@ -433,7 +433,7 @@ function ProfileEditor({
           </p>
           <p className="muted">
             Password resets and two-factor authentication are managed by your
-            EventDesk sign-in.
+            Eventdeskly sign-in.
           </p>
           <SToggle
             label="Yes, Send Daily Digests"
@@ -662,7 +662,7 @@ function AccountBilling({ onNavigate }: { onNavigate: (s: string) => void }) {
   const [tab, setTab] = useState('Subscription');
   return (
     <section className="panel settings-panel form-stack">
-      <h2>EventDesk Billing</h2>
+      <h2>Eventdeskly Billing</h2>
       <STabs
         tabs={['Subscription', 'Billing History', 'Activity']}
         value={tab}
@@ -672,8 +672,8 @@ function AccountBilling({ onNavigate }: { onNavigate: (s: string) => void }) {
         <>
           <h3>Subscription billing is not connected</h3>
           <p>
-            EventDesk plan prices and a billing provider have not been chosen.
-            There is no active EventDesk subscription charge or saved payment
+            Eventdeskly plan prices and a billing provider have not been chosen.
+            There is no active Eventdeskly subscription charge or saved payment
             card in this workspace.
           </p>
           <div className="user-billing-grid">
@@ -714,7 +714,7 @@ function AccountBilling({ onNavigate }: { onNavigate: (s: string) => void }) {
             rows={[]}
           />
           <p>
-            No EventDesk subscription invoices are available. Customer event
+            No Eventdeskly subscription invoices are available. Customer event
             payments are in Payments.
           </p>
         </>
@@ -804,9 +804,9 @@ function SupportCenter({
         <h3>Contact support</h3>
         <p>
           Live chat, support email delivery, video tutorials, webinars and
-          setup-review calls are not connected for EventDesk. Save a request
+          setup-review calls are not connected for Eventdeskly. Save a request
           below and copy it into your conversation with the person helping you
-          build EventDesk.
+          build Eventdeskly.
         </p>
       </div>
       <form

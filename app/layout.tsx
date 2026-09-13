@@ -14,7 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'EventDesk | Event business CRM',
+  title: 'Eventdeskly | Event business CRM',
+  icons: { icon: '/favicon.svg?v=eventdeskly-logo' },
   description:
     'Your event business workspace for leads, packages, proposals and bookings.',
 };

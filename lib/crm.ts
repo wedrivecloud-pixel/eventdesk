@@ -56,6 +56,7 @@ export type LineItem = {
 };
 export type EventRecord = {
   operations?: {
+    brand?: import('./brands').Brand;
     showDiscountCode?: boolean;
     invoice?: import('./proposal').InvoiceDetails;
     quote?: Quote;
@@ -139,6 +140,11 @@ export type Payment = {
   date: string;
   reference: string;
   tip?: number;
+  created_at?: string;
+  voided_at?: string;
+  voided_by?: string;
+  voided_by_name?: string;
+  void_reason?: string;
 };
 export type Data = {
   business: Business | null;
@@ -147,6 +153,8 @@ export type Data = {
   settings?: Settings;
   resources?: Resource[];
   payments?: Payment[];
+  // Effective payments stay separate so existing balances and reports exclude voids.
+  voidedPayments?: Payment[];
   sales?: SalesRecord[];
 };
 export const money = (cents: number) =>
