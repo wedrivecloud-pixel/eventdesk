@@ -1,4 +1,4 @@
-# EventDesk public-launch migration
+# Eventdeskly public-launch migration
 
 CRM for independent event businesses: leads, proposals, bookings, packages,
 add-ons, backdrops, questionnaires, checklists, designs, scheduling, offline

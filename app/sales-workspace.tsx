@@ -35,6 +35,7 @@ export function SalesWorkspace({
   onData,
   onOpen,
   onNavigate,
+  onOpenCatalog,
   onCreateEvent,
   personal = false,
   currentStaffId = '',
@@ -45,6 +46,7 @@ export function SalesWorkspace({
   onData: (d: Data) => void;
   onOpen: (e: EventRecord) => void;
   onNavigate: (s: string) => void;
+  onOpenCatalog?: SalesProps['onOpenCatalog'];
   onCreateEvent: (d?: Partial<EventRecord>) => void;
   personal?: boolean;
   currentStaffId?: string;
@@ -83,8 +85,10 @@ export function SalesWorkspace({
     personal,
     currentStaffId,
     data,
+    onData,
     onOpen,
     onNavigate,
+    onOpenCatalog,
     onCreateEvent,
     edit,
     run,
@@ -581,7 +585,7 @@ export function SalesEditor({
       ) : k === 'payment' ? (
         <>
           <p className="capability-note">
-            Record a payment already received outside EventDesk. No charge will
+            Record a payment already received outside Eventdeskly. No charge will
             be made. Tips are separate from the event balance.
           </p>
           <div className="form-grid">
@@ -603,7 +607,7 @@ export function SalesEditor({
         <>
           {field('name', 'Saved report name', 'text', true)}
           <p>
-            {d.report} · {d.from || 'Any start'} to {d.to || 'Any end'}
+            {d.report} · {['Packages', 'Add-ons', 'Backdrops', 'Packages & Add-ons'].includes(d.report) ? 'Current catalog' : `${d.from || 'Any start'} to ${d.to || 'Any end'}`}
           </p>
         </>
       ) : k === 'import' ? (

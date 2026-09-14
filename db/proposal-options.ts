@@ -1,5 +1,6 @@
 import { rawDb } from './raw';
 import { configuration } from './store';
+import { brandSettings } from '@/lib/brands';
 import { proposalAccess } from './proposals';
 import {
   proposalSummary,
@@ -31,6 +32,7 @@ export async function proposalDigest(value: unknown) {
 export async function proposalClientData(access: ProposalAccess, token = '') {
   const { event: e, bid } = access,
     config = await configuration(bid);
+  config.settings = brandSettings(config.settings, e.operations?.brand);
   const ids = JSON.stringify(e.items.map((p) => p.id));
   const packages = (
     await rawDb()
@@ -176,7 +178,7 @@ export async function proposalClientData(access: ProposalAccess, token = '') {
             ? 'This proposal has expired. Contact the business to renew it.'
             : '';
   const client: ProposalClientData = {
-    summary: proposalSummary(e, access.payments, packages, media),
+    summary: proposalSummary(e, access.payments, packages, media, config.settings),
     options,
     selections,
     revision: await proposalDigest([

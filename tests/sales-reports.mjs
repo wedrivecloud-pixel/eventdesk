@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
 const out = resolve('work/sales-unit');
 await mkdir(out, { recursive: true });
-for (const name of ['sales', 'sales-reports', 'package-pricing', 'staffing']) {
+for (const name of ['sales', 'sales-reports', 'balance-reports', 'utilization-reports', 'frequency-reports', 'availability-reports', 'staff-scheduling', 'crm', 'package-pricing', 'staffing', 'catalog-reports', 'package-config', 'package-manager', 'manage-config']) {
   const text = await readFile(`lib/${name}.ts`, 'utf8'),
     js = ts
       .transpileModule(text, {

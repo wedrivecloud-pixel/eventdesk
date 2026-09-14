@@ -1,4 +1,9 @@
 import type { Data, EventRecord } from './crm';
+import { balanceReports, buildBalanceReport } from './balance-reports';
+import { buildFrequencyReport } from './frequency-reports';
+import { buildUtilizationReport } from './utilization-reports';
+import { catalogReports, buildCatalogReport } from './catalog-reports';
+import { availabilityReports, buildAvailabilityReport } from './availability-reports';
 import {
   activeEvent,
   balance,
@@ -13,14 +18,18 @@ export const reportNames = [
   'Sales Tax',
   'Tips',
   'Balances',
+  ...balanceReports,
   'Most Frequently Booked',
   'Utilization',
+  'Daily Utilization',
   'Profit & Loss',
   'Expenses',
   'Client List',
   'Places',
   'Blockouts & Availability',
+  ...availabilityReports,
   'Packages & Add-ons',
+  ...catalogReports,
   'Message History',
   'Email Event History',
   'Login History',
@@ -31,6 +40,24 @@ export type ReportFilter = {
   status: string;
   search: string;
   group: string;
+  staffId?: string;
+  timeOffStatus?: string;
+  sort?: string;
+  enteredFrom?: string;
+  enteredTo?: string;
+  columns?: string[];
+  catalogStatus?: string;
+  service?: string;
+  packageGroup?: string;
+  categoryId?: string;
+  utilizationDate?: string;
+  dueFrom?: string;
+  dueTo?: string;
+  dueStatus?: string;
+  minAmount?: string;
+  maxAmount?: string;
+  hasPlan?: string;
+  paymentType?: string;
 };
 export const blankReportFilter: ReportFilter = {
   from: '',
@@ -40,6 +67,11 @@ export const blankReportFilter: ReportFilter = {
   group: 'Packages',
 };
 export function buildReport(data: Data, name: string, f: ReportFilter) {
+  if (balanceReports.includes(name)) return buildBalanceReport(data, name, f);
+  if (name === 'Most Frequently Booked') return buildFrequencyReport(data, f);
+  if (name === 'Daily Utilization') return buildUtilizationReport(data, f);
+  if (catalogReports.includes(name)) return buildCatalogReport(data, name, f);
+  if (availabilityReports.includes(name)) return buildAvailabilityReport(data, name, f);
   const between = (day: string) =>
       (!f.from || (!!day && day >= f.from)) &&
       (!f.to || (!!day && day <= f.to)),
@@ -290,7 +322,7 @@ export function buildReport(data: Data, name: string, f: ReportFilter) {
         ]),
     ];
     note =
-      'Business blockout dates and recorded staff time off. Recurring staff availability patterns are not yet modeled.';
+      'Combined business blockout dates and recorded staff time off. Open Staff Availability for recurring weekly schedules.';
   } else if (name === 'Packages & Add-ons') {
     headers = ['Type', 'Name', 'Service / group', 'Price USD', 'Visibility'];
     rows = [
@@ -340,5 +372,5 @@ export function buildReport(data: Data, name: string, f: ReportFilter) {
         ),
       )
     : rows;
-  return { headers, rows: filtered, note };
+  return { headers, rows: filtered, note, columns: headers, error: '' };
 }

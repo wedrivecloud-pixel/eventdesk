@@ -1,0 +1,29 @@
+.brand-social-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 12px;
+  font-size: 14px;
+}
+.brand-social-links a {
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+.brand-social-links a:hover {
+  text-decoration: underline;
+}
+.brand-social-links a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+.brand-social-new-tab {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

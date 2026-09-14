@@ -1,0 +1,395 @@
+.mk-pricing-section {
+  background: linear-gradient(180deg, #f3f9ff, #fff);
+  border-top: 1px solid #dfedfa;
+}
+.mk-pricing-trust {
+  display: flex;
+  justify-content: center;
+  gap: 24px 35px;
+  flex-wrap: wrap;
+  list-style: none;
+  padding: 0;
+}
+.mk-pricing-trust li {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 0.875rem;
+  color: #425466;
+}
+.mk-pricing-trust svg {
+  width: 19px;
+  height: 19px;
+  color: #0871ca;
+}
+.mk-site .mk-billing-toggle {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  margin: 32px auto 16px;
+  padding: 5px;
+  gap: 5px;
+  border: 1px solid #cbdff1;
+  background: white;
+  border-radius: 12px;
+}
+.mk-site .mk-billing-toggle button {
+  min-height: 46px;
+  height: auto;
+  padding: 12px 23px;
+  border-radius: 8px;
+  gap: 10px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #425466;
+  background: white;
+}
+.mk-site .mk-billing-toggle button[aria-pressed='true'] {
+  background: #086aca;
+  color: white;
+}
+.mk-billing-toggle button > span {
+  color: #075c69;
+  background: #c5fbff;
+  border-radius: 5px;
+  padding: 3px 7px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+.mk-site .mk-billing-summary {
+  display: block;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: #52677d;
+  min-height: 2.7em;
+  max-width: 640px;
+  margin: 0 auto 30px;
+}
+.mk-plan-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  gap: 22px;
+}
+.mk-plan-card {
+  border: 1px solid #cddfec;
+  border-radius: 16px;
+  background: white;
+  overflow: hidden;
+  box-shadow: 0 12px 28px #0b4f9408;
+}
+.mk-plan-popular {
+  border: 2px solid #168bff;
+  box-shadow: 0 14px 38px #168bff1a;
+}
+.mk-plan-ribbon {
+  padding: 8px 15px;
+  text-align: center;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.6;
+  min-height: 37px;
+}
+.mk-plan-popular .mk-plan-ribbon {
+  background: #086aca;
+  color: white;
+  border-bottom: 3px solid #00eaf2;
+}
+.mk-plan-body {
+  padding: 23px 28px 18px;
+}
+.mk-site .mk-plan-body h3 {
+  font-size: 1.6rem;
+  letter-spacing: -0.035em;
+}
+.mk-site .mk-plan-description {
+  margin-top: 12px;
+  color: #425466;
+  font-size: 0.9375rem;
+  min-height: 4.95em;
+}
+.mk-plan-price {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 24px;
+}
+.mk-plan-price strong {
+  font-size: 3.25rem;
+  line-height: 1.2;
+  letter-spacing: -0.055em;
+  font-weight: 650;
+  color: #0b1f3a;
+}
+.mk-plan-price > span {
+  color: #52677d;
+  font-size: 0.875rem;
+}
+.mk-site .mk-plan-billing {
+  margin-top: 9px;
+  color: #425466;
+  font-size: 0.875rem;
+}
+.mk-site .mk-plan-savings {
+  font-size: 0.8125rem;
+  color: #076173;
+  margin-top: 8px;
+  font-weight: 600;
+}
+.mk-plan-body > .mk-button {
+  width: 100%;
+  margin: 25px 0 22px;
+}
+.mk-site .mk-plan-allowances {
+  list-style: none;
+  display: grid;
+  gap: 16px;
+  padding: 23px 0;
+  border-top: 1px solid #e1ecf4;
+  margin: 0;
+}
+.mk-plan-allowances li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.875rem;
+  color: #253f59;
+}
+.mk-plan-allowances li > svg {
+  color: #0871ca;
+  width: 17px;
+  height: 17px;
+}
+.mk-site .mk-booking-help {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  background: none;
+  border: 0;
+  color: #426c90;
+  padding: 4px;
+  margin-left: auto;
+  border-radius: 5px;
+}
+.mk-pricing-tooltip[data-slot='tooltip-content'] {
+  max-width: min(300px, calc(100vw - 30px));
+  background: #fff;
+  color: #0b1f3a;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  padding: 14px 17px;
+  border: 1px solid #a7d4ff;
+  box-shadow: 0 8px 25px #0b4f9420;
+}
+.mk-pricing-tooltip > svg {
+  display: none;
+}
+.mk-plan-expanded {
+  border-top: 1px solid #e1ecf4;
+}
+.mk-site .mk-plan-expand {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 17px 0 5px;
+  color: #086aca;
+  background: none;
+  border: 0;
+}
+.mk-plan-expand[aria-expanded='true'] > svg {
+  transform: rotate(180deg);
+}
+.mk-site .mk-plan-feature-list {
+  padding: 19px 0 0;
+  list-style: none;
+  display: grid;
+  gap: 13px;
+}
+.mk-plan-feature-list li {
+  font-size: 0.875rem;
+  color: #425466;
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+}
+.mk-plan-feature-list svg {
+  color: #0871ca;
+  margin-top: 4px;
+}
+.mk-site .mk-plan-availability {
+  margin-block: 19px 5px;
+  font-size: 0.75rem;
+  color: #52677d;
+}
+.mk-pricing-explanation {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 20px 24px;
+  margin-top: 27px;
+  border: 1px solid #d2e7f6;
+  border-radius: 10px;
+  background: #f0f9ff;
+}
+.mk-pricing-explanation svg {
+  color: #0871ca;
+  margin-top: 3px;
+}
+.mk-pricing-explanation p {
+  font-size: 0.875rem;
+  color: #425466;
+}
+.mk-site .mk-pricing-release-note {
+  color: #52677d;
+  font-size: 0.8125rem;
+  margin: 17px auto 0;
+  max-width: 860px;
+  text-align: center;
+}
+.mk-plan-comparison {
+  margin-top: 65px;
+}
+.mk-site .mk-plan-comparison > h3 {
+  font-size: 1.8rem;
+  text-align: center;
+}
+.mk-site .mk-plan-comparison > p {
+  margin: 13px 0 27px;
+  text-align: center;
+  color: #425466;
+}
+.mk-site .mk-comparison-table {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+.mk-site .mk-comparison-table :is(th, td) {
+  white-space: normal;
+  padding: 17px;
+  height: auto;
+  color: #425466;
+  font-size: 0.875rem;
+  text-align: center;
+  border-bottom: 1px solid #e1ecf4;
+  overflow-wrap: anywhere;
+}
+.mk-site .mk-comparison-table th:first-child {
+  width: 37%;
+  text-align: left;
+}
+.mk-site .mk-comparison-table thead th {
+  background: #eef6ff;
+  color: #0b1f3a;
+  font-weight: 650;
+  font-size: 1rem;
+}
+.mk-site .mk-comparison-table :is(th, td):nth-child(2) {
+  background: #f3f9ff;
+}
+.mk-site .mk-comparison-table thead th:nth-child(2) {
+  background: #e0f1ff;
+}
+.mk-comparison-popular {
+  display: block;
+  color: #086aca;
+  font-size: 0.75rem;
+  margin-top: 4px;
+}
+.mk-site .mk-comparison-table caption {
+  color: #52677d;
+  font-size: 0.8125rem;
+  margin-top: 17px;
+  text-align: left;
+}
+@media (max-width: 1050px) {
+  .mk-plan-grid {
+    gap: 15px;
+  }
+  .mk-plan-body {
+    padding: 20px;
+  }
+  .mk-plan-allowances li {
+    font-size: 0.8125rem;
+    gap: 6px;
+  }
+}
+@media (max-width: 800px) {
+  .mk-plan-grid {
+    grid-template-columns: 1fr;
+    max-width: 520px;
+    margin: auto;
+  }
+  .mk-plan-body {
+    padding: 24px;
+  }
+  .mk-plan-description {
+    min-height: 0 !important;
+  }
+  .mk-plan-card:not(.mk-plan-popular) .mk-plan-ribbon {
+    display: none;
+  }
+  .mk-plan-allowances li {
+    font-size: 0.9375rem;
+  }
+  .mk-pricing-trust {
+    gap: 15px 25px;
+  }
+  .mk-site .mk-comparison-table :is(th, td) {
+    padding: 13px 9px;
+    font-size: 0.8125rem;
+  }
+  .mk-site .mk-comparison-table thead th {
+    font-size: 0.875rem;
+  }
+  .mk-site .mk-comparison-table th:first-child {
+    width: 34%;
+  }
+}
+@media (max-width: 420px) {
+  .mk-site .mk-billing-toggle button {
+    padding: 11px;
+    gap: 6px;
+    font-size: 0.875rem;
+  }
+  .mk-billing-toggle button > span {
+    padding: 3px 5px;
+  }
+  .mk-pricing-trust {
+    align-items: flex-start;
+    flex-direction: column;
+    margin-inline: auto;
+    width: fit-content;
+  }
+  .mk-plan-body {
+    padding: 22px;
+  }
+  .mk-pricing-explanation {
+    padding: 16px;
+  }
+  .mk-site .mk-comparison-table :is(th, td) {
+    padding: 12px 4px;
+    font-size: 0.75rem;
+  }
+  .mk-site .mk-comparison-table thead th {
+    font-size: 0.75rem;
+  }
+  .mk-comparison-popular {
+    font-size: 0.75rem;
+  }
+  .mk-site .mk-comparison-table th:first-child {
+    width: 25%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mk-pricing-tooltip {
+    animation: none !important;
+    transition: none !important;
+  }
+}

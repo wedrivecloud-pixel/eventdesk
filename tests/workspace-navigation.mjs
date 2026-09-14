@@ -69,6 +69,7 @@ const priorSections = [
 ];
 for (const view of priorSections) {
   const href = workspaceHref(view);
+  assert.equal(new URL(href, 'https://example.test').pathname, '/app', 'CRM navigation stays in the app');
   assert.equal(
     viewFromSearch(new URL(href, 'https://example.test').search),
     canonicalView(view),

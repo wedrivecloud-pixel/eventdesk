@@ -1,4 +1,5 @@
 'use client';
+import { BrandSocialLinks } from '@/app/brand-social-links';
 import {
   useEffect,
   useRef,
@@ -193,6 +194,7 @@ export default function CustomerBooking({
       '/api/booking?' +
         new URLSearchParams({
           package: p.id,
+          brand: initial.brandId || '',
           date: selection.date,
           minutes: String(availabilityMinutes),
         }),
@@ -331,6 +333,7 @@ export default function CustomerBooking({
         body: JSON.stringify({
           action: step === 2 ? 'quote' : 'submit',
           packageId: p.id,
+          brandId: initial.brandId || '',
           ...selection,
           ...(step === 3
             ? {
@@ -390,7 +393,7 @@ export default function CustomerBooking({
           {business.hasLogo ? (
             <img
               src={
-                '/api/booking/image?' +
+                business.logoUrl || '/api/booking/image?' +
                 new URLSearchParams({ package: p.id, logo: '1' })
               }
               alt=""
@@ -1093,6 +1096,7 @@ export default function CustomerBooking({
               </p>
             </div>
             <div className="cb-contact">
+              <BrandSocialLinks links={business.socialLinks} />
               <strong>Questions before you book?</strong>
               {business.email && (
                 <a href={'mailto:' + business.email}>
@@ -1111,7 +1115,7 @@ export default function CustomerBooking({
         </aside>
       </main>
       <footer className="cb-powered">
-        Booking requests powered by <strong>EventDesk</strong>
+        Booking requests powered by <strong>Eventdeskly</strong>
       </footer>
     </div>
   );

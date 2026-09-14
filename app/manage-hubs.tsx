@@ -15,6 +15,7 @@ import {
 import { SettingsForm, SettingsCenter } from './management';
 import { SChoice, SField, SToggle, STabs } from './sales-ui';
 import { MSection } from './manage-editors';
+import { BrandManager } from './brand-manager';
 export function ManageHome({
   onNavigate,
 }: {
@@ -272,10 +273,12 @@ export function BusinessSettings(props: ManageProps) {
           <MediaLibrary {...props} />
         ) : tab === 'Integrations' ? (
           <IntegrationDirectory />
-        ) : tab === 'Business profile' || tab === 'Branding' ? (
+        ) : tab === 'Branding' ? (
+          <BrandManager {...props} primaryEditor={<ProfileSettings {...props} section="branding" />} />
+        ) : tab === 'Business profile' ? (
           <ProfileSettings
             {...props}
-            section={tab === 'Branding' ? 'branding' : 'profile'}
+            section="profile"
           />
         ) : (
           <SettingPane
@@ -580,13 +583,13 @@ export function ReferFriends({ data }: ManageProps) {
   return (
     <section className="panel settings-panel">
       <h2>Refer friends</h2>
-      <p>Share EventDesk with another independent event business.</p>
+      <p>Share Eventdeskly with another independent event business.</p>
       <CopyBlock
         value={origin + '/?ref=' + encodeURIComponent(data.business?.id || '')}
       />
       <CopyBlock
         label="Draft message"
-        value={`EventDesk helps event businesses organize packages, inquiries and bookings. Take a look: ${origin}/?ref=${encodeURIComponent(data.business?.id || '')}`}
+        value={`Eventdeskly helps event businesses organize packages, inquiries and bookings. Take a look: ${origin}/?ref=${encodeURIComponent(data.business?.id || '')}`}
       />
       <p className="muted">
         No referral reward or promotional discount is configured. Sharing does

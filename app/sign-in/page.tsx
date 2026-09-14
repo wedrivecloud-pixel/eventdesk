@@ -1,16 +1,19 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { AppLogo } from '@/components/app-logo';
+import { SignupPlanSummary } from '@/components/marketing/signup-plan';
 import { createAuthClient } from 'better-auth/react';
 const auth=createAuthClient();
 export default function SignIn() {
  const [mode,setMode]=useState<'signin'|'signup'|'forgot'|'reset'>('signin');
  const [busy,setBusy]=useState(false),[message,setMessage]=useState('');
+ useEffect(()=>{if(new URLSearchParams(location.search).get('mode')==='signup')setMode('signup');},[]);
  async function submit(event:React.FormEvent<HTMLFormElement>){
   event.preventDefault();setBusy(true);setMessage('');
   const data=new FormData(event.currentTarget),email=String(data.get('email')||''),password=String(data.get('password')||'');
   const q=new URLSearchParams(location.search),token=q.get('token');
-  let next=q.get('return_to')||'/';
-  if(!next.startsWith('/')||next.startsWith('//')||next.includes('\\'))next='/';
+  let next=q.get('return_to')||'/app';
+  if(!next.startsWith('/')||next.startsWith('//')||next.includes('\\'))next='/app';
   try {
    const result=token?await auth.resetPassword({token,newPassword:password})
     :mode==='signup'?await auth.signUp.email({email,password,name:String(data.get('name')||''),callbackURL:next})
@@ -25,8 +28,9 @@ export default function SignIn() {
  }
  const token=typeof window!=='undefined'&&new URLSearchParams(location.search).has('token');
  return <main style={{maxWidth:460,margin:'8vh auto',padding:24}}>
-  <a href="/" style={{fontWeight:700,fontSize:24}}>EventDesk</a>
+  <a href="/" aria-label="Eventdeskly home" style={{display:'inline-flex',maxWidth:'100%',padding:16,borderRadius:12,background:'#142139'}}><AppLogo className="workspace-brand-logo" /></a>
   <h1>{token?'Reset password':mode==='signup'?'Create your account':mode==='forgot'?'Reset your password':'Welcome back'}</h1>
+  {mode==='signup'&&!token&&<SignupPlanSummary/>}
   <form onSubmit={submit} style={{display:'grid',gap:16}}>
    {mode==='signup'&&!token&&<label>Your name<input name="name" autoComplete="name" required maxLength={100}/></label>}
    {!token&&<label>Email<input name="email" type="email" autoComplete="email" required maxLength={254}/></label>}

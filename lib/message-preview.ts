@@ -330,7 +330,7 @@ export function messageRecipients(r: Resource, c: MessageContext, data: Data) {
       .filter(Boolean)
       .forEach((email) => add('', email, ''));
   if (roles.includes('My business'))
-    add(data.business?.name, data.business?.email, data.business?.phone);
+    add(e?.operations?.brand?.name ?? data.business?.name, e?.operations?.brand?.email ?? data.business?.email, e?.operations?.brand?.phone ?? data.business?.phone);
   if (roles.includes('Assigned staff'))
     (data.resources || [])
       .filter(
@@ -365,8 +365,8 @@ export function messageValues(
     if (value !== undefined && value !== null && value !== '')
       values[key] = String(value);
   };
-  set('business_name', data.business?.name);
-  set('brand_signature', data.settings?.signature || data.business?.name);
+  set('business_name', e?.operations?.brand?.name ?? data.business?.name);
+  set('brand_signature', e?.operations?.brand ? e.operations.brand.signature || e.operations.brand.name : data.settings?.signature || data.business?.name);
   const name = String(a?.data.name || e?.client || '');
   set('client_name', name);
   set('client_first_name', name.split(' ')[0]);

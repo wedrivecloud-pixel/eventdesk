@@ -35,8 +35,10 @@ export type SalesProps = {
   personal?: boolean;
   currentStaffId?: string;
   data: Data;
+  onData: (data: Data) => void;
   onOpen: (e: EventRecord) => void;
   onNavigate: (s: string) => void;
+  onOpenCatalog?: (report: string, id: string) => void;
   edit: (e: Editor) => void;
   run: (body: Record<string, unknown>, endpoint?: string) => Promise<boolean>;
   busy: boolean;

@@ -42,7 +42,7 @@ export function LinkQR({ href }: { href: string }) {
             alt="QR code for this booking link"
           />
           <figcaption>
-            <a href={image.src} download="eventdesk-booking-qr.png">
+            <a href={image.src} download="eventdeskly-booking-qr.png">
               Download QR code
             </a>
           </figcaption>

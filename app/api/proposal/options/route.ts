@@ -154,7 +154,7 @@ export async function POST(req: Request) {
         .prepare(`INSERT INTO event_operations(event_id,business_id,data)
         SELECT ?,?,? WHERE EXISTS(SELECT 1 FROM events WHERE id=? AND business_id=? AND updated_at=? AND status='proposal' AND lifecycle='Active')
         AND COALESCE((SELECT ed_json(data) FROM event_operations WHERE event_id=? AND business_id=?),'{}')=ed_json(?)
-        AND COALESCE((SELECT SUM(amount) FROM payments WHERE event_id=? AND business_id=?),0)=?
+        AND COALESCE((SELECT SUM(amount) FROM payments WHERE event_id=? AND business_id=? AND voided_at=''),0)=?
         AND (?=1 OR EXISTS(SELECT 1 FROM sales_records WHERE id=? AND business_id=? AND kind='proposal_link' AND archived=0 AND ed_text(data,'$.token')=?))
         AND (?='' OR EXISTS(SELECT 1 FROM resources WHERE id=? AND business_id=? AND kind='discounts' AND archived=0 AND ed_json(data)=ed_json(?)))
         ON CONFLICT(event_id) DO UPDATE SET data=excluded.data WHERE event_operations.business_id=excluded.business_id`)

@@ -49,6 +49,7 @@ export async function snapshot(owner: string) {
       settings: mergedSettings(),
       resources: [],
       payments: [],
+      voidedPayments: [],
     };
   const db = rawDb();
   const persistedSettings = await db
@@ -119,7 +120,8 @@ export async function snapshot(owner: string) {
       items: JSON.parse(String(x.items)),
       operations: ops[String(x.id)] || {},
     })),
-    payments: pay.results,
+    payments: pay.results.filter((p) => !p.voided_at),
+    voidedPayments: pay.results.filter((p) => !!p.voided_at),
     sales: sales.results.map((r) => ({
       ...r,
       data: JSON.parse(String(r.data)),

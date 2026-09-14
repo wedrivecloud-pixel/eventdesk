@@ -1,7 +1,12 @@
 import { bookingQuestions, checkedAnswers } from '@/lib/manage-questions';
+import { findBrand, brandSettings } from '@/lib/brands';
 import { validateQuestionFiles } from '@/db/question-files';
 import { discountGuard, checkDiscount } from '@/db/manage-guards';
-import { bookingConfirmationGuard } from '@/db/booking-confirmation';
+import {
+  bookingConfirmationGuard,
+  bookingExtrasGuard,
+} from '@/db/booking-confirmation';
+import { bookingExtrasQuote } from '@/lib/booking-extras';
 import {
   validatePackageSettings,
   packageSettings,
@@ -261,6 +266,10 @@ export async function POST(req: Request) {
         }
         const config = await configuration(bid);
         const oldOps = current ? await operations(current.id, bid) : {};
+        const brandId = body.brandId === undefined ? oldOps.brand?.id || '' : text(body.brandId || '', 'Brand', 100, false);
+        // Keep the identity quoted on an existing event, including archived brands.
+        const brand = brandId && brandId === oldOps.brand?.id ? oldOps.brand : findBrand(config.resources, brandId);
+        config.settings = brandSettings(config.settings, brand);
         if (current?.status !== 'confirmed')
           validatePackageSchedule(
             items,
@@ -271,8 +280,12 @@ export async function POST(req: Request) {
         if (!config.settings.multiplePackages && items.length > 1)
           throw new Error('This business allows only one package per event.');
         const quote =
-          current?.status === 'confirmed' && oldOps.quote
-            ? oldOps.quote
+          current?.status === 'confirmed'
+            ? bookingExtrasQuote(items, config.resources, config.settings, {
+                date: day, time, addonIds: body.addonIds,
+                addonQuantities: body.addonQuantities,
+                extraPackageIds: body.extraPackageIds, backdropId: body.backdropId,
+              }, oldOps.quote)
             : calculateQuote(
                 items,
                 config.resources,
@@ -292,16 +305,37 @@ export async function POST(req: Request) {
                 },
                 oldOps.quote,
               );
-        if (current?.status !== 'confirmed') {
+        const changingExtras =
+          current?.status === 'confirmed' && quote !== oldOps.quote;
+        if (current?.status !== 'confirmed' || changingExtras) {
           const updated = adjustedItems(items, quote.extras);
           items.splice(0, items.length, ...updated);
         }
         const total = quote.total;
+        const extrasGuard = changingExtras
+          ? await bookingExtrasGuard(
+              bid, current!.id, { date: day, time, items },
+              JSON.parse(String(current!.items)), oldOps.staffIds || [],
+              quote.backdropId, config,
+            )
+          : { sql: '0', args: [] };
+        const checkExtrasAvailability = async () => {
+          if (extrasGuard.sql === '0') return;
+          const result = await db
+            .prepare(`SELECT ${extrasGuard.sql} AS unavailable`)
+            .bind(...extrasGuard.args)
+            .first<{ unavailable: number }>();
+          if (result?.unavailable)
+            throw Error(
+              'This add-on extends the booking into unavailable capacity or staff time. Choose a different add-on or quantity.',
+            );
+        };
+        await checkExtrasAvailability();
         cents(total, 'Total');
         const paid = current
           ? await db
               .prepare(
-                'SELECT COALESCE(SUM(amount),0) AS amount FROM payments WHERE event_id=? AND business_id=?',
+                "SELECT COALESCE(SUM(amount),0) AS amount FROM payments WHERE event_id=? AND business_id=? AND voided_at=''",
               )
               .bind(current.id, bid)
               .first<{ amount: number }>()
@@ -433,6 +467,7 @@ export async function POST(req: Request) {
             bid,
             JSON.stringify({
               ...oldOps,
+              brand,
               ...(!current && initialStatus === 'proposal'
                 ? { sales: { proposalCreatedAt: now } }
                 : creatingBooking
@@ -444,15 +479,22 @@ export async function POST(req: Request) {
             }),
             eventId,
             bid,
-            JSON.stringify({ quote, bookingAnswers, bookingFields }),
+            JSON.stringify({ quote, bookingAnswers, bookingFields, brand: brand || null }),
             bid,
           );
         await checkDiscount(bid, eventId, quote.discountId);
-        const writes = await db.batch([
+        let writes;
+        try {
+          writes = await db.batch([
           discountGuard(bid, eventId, quote.discountId),
           eventWrite,
           operationWrite,
-        ]);
+          ...(extrasGuard.sql === '0' ? [] : [db.prepare(`SELECT CASE WHEN NOT ${extrasGuard.sql} THEN 1 ELSE ed_raise('Booking availability changed') END`).bind(...extrasGuard.args)]),
+          ]);
+        } catch (error) {
+          await checkExtrasAvailability();
+          throw error;
+        }
         if (creatingBooking && !writes[1].meta.changes)
           throw Error(
             'Booking capacity or staff availability changed. Choose another time or available staff and try again.',

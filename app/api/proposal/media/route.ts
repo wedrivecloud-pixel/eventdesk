@@ -2,6 +2,8 @@ import { files } from '@/server/storage';
 import { proposalAccess } from '@/db/proposals';
 import { rawDb } from '@/db/raw';
 import { proposalClientData } from '@/db/proposal-options';
+import { configuration } from '@/db/store';
+import { presentationFromSettings } from '@/lib/brand-presentation';
 export async function GET(req: Request) {
   try {
     const q = new URL(req.url).searchParams,
@@ -11,7 +13,16 @@ export async function GET(req: Request) {
     let key = '',
       mime = '';
     if (q.get('logo') === '1') {
-      key = access.bid + '/logo';
+      const brand = access.event.operations?.brand;
+      const presentation = brand || presentationFromSettings((await configuration(access.bid)).settings);
+      const logoId = presentation.overrideInvoice && presentation.invoiceLogoId ? presentation.invoiceLogoId : brand?.logoId;
+      if (brand && !logoId) return new Response('Not found', {status:404});
+      if (logoId) {
+        const row = await rawDb().prepare("SELECT data FROM resources WHERE id=? AND business_id=? AND kind='media'").bind(logoId, access.bid).first<{data:string}>();
+        mime = row ? JSON.parse(row.data).mime : '';
+        if (!['image/png', 'image/jpeg', 'image/webp'].includes(mime)) return new Response('Not found', {status:404});
+      }
+      key = logoId ? access.bid + '/media/' + logoId : access.bid + '/logo';
     } else if (q.get('package')) {
       const pid = q.get('package');
       if (!id || !access.event.items.some((p) => p.id === pid))

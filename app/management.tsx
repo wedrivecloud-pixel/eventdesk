@@ -346,7 +346,7 @@ export function SettingsForm({
       className="form-stack"
       onSubmit={(e) => {
         e.preventDefault();
-        void onSave({ action: 'save_settings', group, data: value });
+        void onSave({ action: 'save_settings', group, data: fieldKeys ? Object.fromEntries(fieldKeys.map((key) => [key, value[key]])) : value });
       }}
     >
       <div>
@@ -453,6 +453,7 @@ export function SettingsCenter({
             {logoControl}
             <SettingsForm
               group="branding"
+              fieldKeys={settingGroups.branding.fields.map((f) => f.key).filter((key) => !['address', 'website', 'about', 'signature', 'footer', 'showAddress'].includes(key))}
               data={data}
               onSave={onSave}
               busy={busy}

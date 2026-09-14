@@ -420,3 +420,9 @@
     break-inside: avoid;
   }
 }
+.proposal-document-logo { width: auto; max-width: 180px; height: 80px; object-fit: contain; margin-bottom: 12px; }
+.proposal-trust-indicators { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 12px; margin: 24px 0; }
+.proposal-trust-indicators > div { border: 1px solid #e3e8ef; border-radius: 10px; padding: 16px; overflow-wrap: anywhere; break-inside: avoid; }
+.proposal-trust-indicators strong, .proposal-trust-indicators span { display: block; }
+.proposal-trust-indicators strong { font-size: 24px; color: var(--brand-color, #315ee8); }
+.proposal-trust-indicators span { font-size: 14px; color: #64748b; margin-top: 6px; }

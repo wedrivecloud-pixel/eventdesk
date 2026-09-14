@@ -7,6 +7,8 @@ import {
 } from './crm';
 import { details } from './manage-config';
 import { proposalDiscountCode } from './proposal-discounts';
+import { documentBrandPresentation, presentationFromSettings } from './brand-presentation';
+import type { Settings } from './settings';
 export const proposalTabs = [
   'Overview',
   'Checklists',
@@ -79,8 +81,12 @@ export function proposalSummary(
   payments: Payment[],
   packages: PackageRecord[] = [],
   mediaBase = '',
+  primarySettings: Settings = {},
 ) {
   const quote = e.operations?.quote;
+  const brand = e.operations?.brand,
+    brandDetails = brand || presentationFromSettings(primarySettings),
+    logoId = brandDetails.overrideInvoice && brandDetails.invoiceLogoId ? brandDetails.invoiceLogoId : brand?.logoId;
   // Explicit allowlist: never pass operations, private notes, staff, drafts or
   // payment references into a client-visible document or a client component.
   return {
@@ -92,6 +98,10 @@ export function proposalSummary(
     venue: e.venue,
     client: e.client,
     email: e.email,
+    brandPresentation: {
+      ...documentBrandPresentation(brandDetails),
+      logoUrl: mediaBase && (logoId || (!brand && primarySettings.logoVersion)) ? mediaBase + '&logo=1' : '',
+    },
     items: e.items.map((p) => ({
       id: p.id,
       name: p.name,

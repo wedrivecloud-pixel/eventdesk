@@ -131,14 +131,14 @@ export function GlobalSearch({
       <button
         type="button"
         className="global-search-trigger"
-        aria-label="Search EventDesk"
+        aria-label="Search Eventdeskly"
         aria-haspopup="dialog"
         aria-keyshortcuts="Control+k Meta+k"
         disabled={disabled}
         onClick={() => changeOpen(true)}
       >
         <Search size={18} />
-        <span>Search EventDesk…</span>
+        <span>Search Eventdeskly…</span>
         <kbd>{shortcut}</kbd>
       </button>
       <Dialog open={open} onOpenChange={changeOpen}>

@@ -127,11 +127,11 @@ export async function DELETE(req: Request) {
   )
     return json({ error: 'Invalid origin.' }, 403);
   const id = new URL(req.url).searchParams.get('id'),
-    { resources } = await configuration(b.id);
+    { resources, settings } = await configuration(b.id);
   if (
-    resources.some((r) => {
+    settings.invoiceLogoId === id || resources.some((r) => {
       const d = details(r);
-      return d.images.includes(id || '') || d.attachments.includes(id || '');
+      return (r.kind === 'brands' && (r.data.logoId === id || r.data.invoiceLogoId === id)) || d.images.includes(id || '') || d.attachments.includes(id || '');
     })
   )
     return json(

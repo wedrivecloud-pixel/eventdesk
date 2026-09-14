@@ -401,7 +401,7 @@ export default function Workspace() {
           {
             name: 'navigate_workspace',
             description:
-              'Open an EventDesk workspace section without modifying saved records.',
+              'Open an Eventdeskly workspace section without modifying saved records.',
             inputSchema: {
               type: 'object',
               properties: {
@@ -669,7 +669,7 @@ export default function Workspace() {
             <section className="welcome-panel">
               <div>
                 <span className="pill">YOUR OWN BUSINESS WORKSPACE</span>
-                <h2>Welcome to EventDesk.</h2>
+                <h2>Welcome to Eventdeskly.</h2>
                 <p>
                   Sign in to set up your services, build packages,
                   <br />
@@ -677,10 +677,10 @@ export default function Workspace() {
                 </p>
                 <a
                   className="white-button"
-                  href="/sign-in?return_to=/"
+                  href="/sign-in?return_to=/app"
                   target="_top"
                 >
-                  Sign in to EventDesk <ArrowUpRight size={18} />
+                  Sign in to Eventdeskly <ArrowUpRight size={18} />
                 </a>
               </div>
               <div className="welcome-steps">
@@ -766,6 +766,19 @@ export default function Workspace() {
                   onData={setData}
                   onOpen={open}
                   onNavigate={navigate}
+                  onOpenCatalog={(report, id) => {
+                    if (report === 'Packages') {
+                      const item = data.packages.find((pkg) => pkg.id === id);
+                      if (!item) return;
+                      setPackageDefaults({});
+                      setEditingPackage(item);
+                      setError('');
+                      setModal('package');
+                    } else {
+                      navigate(report);
+                      setSearchResource({ id, request: Date.now() });
+                    }
+                  }}
                   onCreateEvent={(defaults = {}) => {
                     create('event');
                     setEventDefaults((current) => ({
@@ -881,7 +894,7 @@ export default function Workspace() {
                     key={`${resourceKind}:${searchResource?.request || 0}`}
                     kind={resourceKind}
                     initialResourceId={
-                      resourceKind === 'venues' ? searchResource?.id : undefined
+                      ['venues', 'addons', 'backdrops'].includes(resourceKind) ? searchResource?.id : undefined
                     }
                     data={data}
                     onData={setData}
@@ -891,7 +904,7 @@ export default function Workspace() {
             </>
           )}
           <footer className="page-footer">
-            <span>EventDesk · Built for the business behind the event.</span>
+            <span>Eventdeskly · Built for the business behind the event.</span>
             <span>
               Offline payments available · Online processing and e-signatures
               not connected
@@ -1144,7 +1157,7 @@ export default function Workspace() {
                   </p>
                 )}
                 <QuoteBreakdown quote={selected.operations?.quote} />
-                <EventPlanning
+                <EventPlanning onData={setData}
                   key={selected.id + eventTab}
                   initialTab={eventTab}
                   item={selected}

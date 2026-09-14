@@ -1,5 +1,11 @@
 'use client';
 import { useState } from 'react';
+import { frequencyGroups } from '@/lib/frequency-reports';
+import { balanceReports, balanceSorts } from '@/lib/balance-reports';
+import { utilizationGroups, utilizationSorts } from '@/lib/utilization-reports';
+import { availabilityReports, availabilitySorts } from '@/lib/availability-reports';
+import { catalogReports, catalogSorts, catalogStatuses, catalogCategories, catalogGroups } from '@/lib/catalog-reports';
+import { VoidPaymentButton, PaymentVoidAudit } from './payment-void';
 import { money, prettyDate } from '@/lib/crm';
 import {
   activeEvent,
@@ -38,11 +44,12 @@ export function SalesAnalytics(p: SalesProps & { view: string }) {
   );
 }
 function Payments(p: SalesProps) {
+  const [showVoided, setShowVoided] = useState(false);
   const [q, setQ] = useState(''),
     [method, setMethod] = useState('All methods'),
     [from, setFrom] = useState(''),
     [to, setTo] = useState('');
-  const rows = (p.data.payments || []).filter(
+  const rows = [...(p.data.payments || []), ...(showVoided ? p.data.voidedPayments || [] : [])].sort((a,b) => b.date.localeCompare(a.date) || (b.created_at || '').localeCompare(a.created_at || '')).filter(
     (r) =>
       (method === 'All methods' || r.method === method) &&
       (!from || r.date >= from) &&
@@ -51,6 +58,7 @@ function Payments(p: SalesProps) {
         .toLowerCase()
         .includes(q.toLowerCase()),
   );
+  const effectiveRows = rows.filter(r => !r.voided_at);
   return (
     <section className="panel">
       <SHeader title="Recorded payments">
@@ -79,6 +87,7 @@ function Payments(p: SalesProps) {
                 'Reference',
                 'Payment USD',
                 'Tip USD',
+                'Status', 'Voided at', 'Voided by', 'Void reason',
               ],
               ...rows.map((r) => [
                 r.date,
@@ -87,6 +96,7 @@ function Payments(p: SalesProps) {
                 r.reference,
                 r.amount / 100,
                 (r.tip || 0) / 100,
+                r.voided_at ? 'Voided' : 'Recorded', r.voided_at || '', r.voided_by_name || '', r.void_reason || '',
               ]),
             ])
           }
@@ -115,25 +125,26 @@ function Payments(p: SalesProps) {
         />
         <SField label="From" type="date" value={from} onChange={setFrom} />
         <SField label="To" type="date" value={to} onChange={setTo} />
+        <SToggle label="Show voided payments" value={showVoided} onChange={setShowVoided} />
       </div>
       <div className="sales-metrics">
         <article>
           <span>Payments</span>
-          <strong>{money(rows.reduce((n, r) => n + r.amount, 0))}</strong>
+          <strong>{money(effectiveRows.reduce((n, r) => n + r.amount, 0))}</strong>
         </article>
         <article>
           <span>Tips</span>
-          <strong>{money(rows.reduce((n, r) => n + (r.tip || 0), 0))}</strong>
+          <strong>{money(effectiveRows.reduce((n, r) => n + (r.tip || 0), 0))}</strong>
         </article>
         <article>
           <span>Total received</span>
           <strong>
-            {money(rows.reduce((n, r) => n + r.amount + (r.tip || 0), 0))}
+            {money(effectiveRows.reduce((n, r) => n + r.amount + (r.tip || 0), 0))}
           </strong>
         </article>
       </div>
       <STable
-        headers={['Date', 'Event', 'Method', 'Reference', 'Payment', 'Tip']}
+        headers={['Date', 'Event', 'Method', 'Reference', 'Payment', 'Tip', 'Status', 'Action']}
         rows={rows.map((r) => {
           const e = p.data.events.find((e) => e.id === r.event_id);
           return [
@@ -149,6 +160,8 @@ function Payments(p: SalesProps) {
             r.reference,
             money(r.amount),
             money(r.tip || 0),
+            r.voided_at ? <PaymentVoidAudit payment={r} /> : 'Recorded',
+            !r.voided_at && e ? <VoidPaymentButton payment={r} event={e} data={p.data} onData={p.onData} disabled={p.busy} /> : '—',
           ];
         })}
       />
@@ -156,9 +169,16 @@ function Payments(p: SalesProps) {
   );
 }
 function Reports(p: SalesProps) {
+  const [utilizationDetail, setUtilizationDetail] = useState('');
+  const [frequencyDetail, setFrequencyDetail] = useState('');
   const [tab, setTab] = useState('Default Reports'),
     [name, setName] = useState(''),
     [filter, setFilter] = useState<ReportFilter>({ ...blankReportFilter });
+  const availability = availabilityReports.includes(name), weekly = name === 'Staff Availability';
+  const catalog = catalogReports.includes(name);
+  const utilization = name === 'Daily Utilization';
+  const frequency = name === 'Most Frequently Booked';
+  const balances = balanceReports.includes(name);
   const report = buildReport(p.data, name, filter),
     set = (key: keyof ReportFilter, value: string) =>
       setFilter((old) => ({ ...old, [key]: value }));
@@ -174,6 +194,7 @@ function Reports(p: SalesProps) {
               <>
                 <button
                   className="secondary"
+                  disabled={!!report.error}
                   onClick={() =>
                     downloadCsv(name.toLowerCase().replaceAll(' ', '-'), [
                       report.headers,
@@ -185,6 +206,7 @@ function Reports(p: SalesProps) {
                 </button>
                 <button
                   className="primary"
+                  disabled={!!report.error}
                   onClick={() =>
                     p.edit({
                       kind: 'saved_report',
@@ -208,22 +230,22 @@ function Reports(p: SalesProps) {
           />
           {tab === 'Default Reports' ? (
             <div className="sales-report-grid">
-              {reportNames.map((n) => (
+              {reportNames.filter((n) => !['Balances', 'Blockouts & Availability', 'Packages & Add-ons', 'Utilization'].includes(n)).map((n) => (
                 <button
                   className="sales-report-card"
                   key={n}
                   onClick={() => {
                     setName(n);
-                    setFilter({ ...blankReportFilter });
+                    setFilter({ ...blankReportFilter, ...(n === 'Daily Utilization' ? { utilizationDate: localToday(p.data) } : n === 'Most Frequently Booked' ? { from: localToday(p.data).slice(0, 4) + '-01-01', to: localToday(p.data).slice(0, 4) + '-12-31' } : {}) });
                   }}
                 >
-                  <span>{n}</span>
+                  <span>{n === 'Daily Utilization' ? 'Utilization' : n}</span>
                   <small>
                     {['Email Event History', 'Login History'].includes(n)
                       ? 'Connection required'
                       : n === 'Message History'
                         ? 'Manually logged exchanges'
-                        : 'View, filter and export'}
+                        : n === 'Daily Utilization' ? 'Packages, add-ons, backdrops, bundles and staff' : 'View, filter and export'}
                   </small>
                 </button>
               ))}
@@ -242,7 +264,7 @@ function Reports(p: SalesProps) {
                   {r.data.name}
                 </button>,
                 r.data.report,
-                `${r.data.from || 'Any start'} – ${r.data.to || 'Any end'}`,
+                r.data.report === 'Daily Utilization' ? r.data.utilizationDate : r.data.report === 'Staff Availability' ? 'Recurring weekly schedule' : catalogReports.includes(r.data.report) || r.data.report === 'Packages & Add-ons' ? 'Current catalog' : `${r.data.from || 'Any start'} – ${r.data.to || 'Any end'}`,
                 <SActions
                   items={[
                     {
@@ -274,7 +296,13 @@ function Reports(p: SalesProps) {
         </>
       ) : (
         <>
+          {(balances || name === 'Balances') && <STabs tabs={balanceReports} value={name} onChange={(next) => { setName(next); setFilter({ ...blankReportFilter }); }} />}
+          {(availability || name === 'Blockouts & Availability') && <STabs tabs={availabilityReports} value={name} onChange={(next) => { setName(next); setFilter({ ...blankReportFilter }); }} />}
+          {(catalog || name === 'Packages & Add-ons') && <STabs tabs={catalogReports} value={name} onChange={(next) => { setName(next); setFilter({ ...blankReportFilter }); }} />}
           <p className="capability-note">{report.note}</p>
+          {frequency && <STabs tabs={frequencyGroups} value={filter.group} onChange={(group) => { setFilter((old) => ({ ...old, group, columns: undefined })); setFrequencyDetail(''); }} />}
+          {utilization && <STabs tabs={utilizationGroups} value={filter.group} onChange={(group) => { set('group', group); setUtilizationDetail(''); }} />}
+          {availability && <div className="padded"><button className="secondary" onClick={() => p.onNavigate(name === 'Business Blockout Dates' ? 'Business settings' : 'Set Booking Availability')}>{name === 'Business Blockout Dates' ? 'Manage business blockouts' : 'Manage staff availability & time off'}</button></div>}
           {!!report.headers.length && (
             <>
               <div className="sales-filters">
@@ -283,16 +311,17 @@ function Reports(p: SalesProps) {
                   value={filter.search}
                   onChange={(v) => set('search', v)}
                 />
-                {name !== 'Packages & Add-ons' && (
+                {utilization && <><SField label="Utilization date" type="date" value={filter.utilizationDate || localToday(p.data)} onChange={(v) => { set('utilizationDate', v); setUtilizationDetail(''); }} /><SChoice label="Sort by" value={filter.sort || 'Name (A–Z)'} options={utilizationSorts} onChange={(v) => set('sort', v)} /></>}
+                {name !== 'Packages & Add-ons' && !weekly && !catalog && !utilization && (
                   <>
                     <SField
-                      label="From"
+                      label={balances ? 'Event date from' : 'From'}
                       type="date"
                       value={filter.from}
                       onChange={(v) => set('from', v)}
                     />
                     <SField
-                      label="To"
+                      label={balances ? 'Event date to' : 'To'}
                       type="date"
                       value={filter.to}
                       onChange={(v) => set('to', v)}
@@ -322,7 +351,7 @@ function Reports(p: SalesProps) {
                     ]}
                   />
                 )}{' '}
-                {['Most Frequently Booked', 'Utilization'].includes(name) && (
+                {name === 'Utilization' && (
                   <SChoice
                     label="Group by"
                     value={filter.group}
@@ -337,13 +366,49 @@ function Reports(p: SalesProps) {
                     ]}
                   />
                 )}
+                {availability && name !== 'Business Blockout Dates' && <SChoice label="Staff member" value={filter.staffId || ''} onChange={(v) => set('staffId', v)} options={[
+                  { value: '', label: 'All staff' },
+                  ...(p.data.resources || []).filter((r) => r.kind === 'staff' && (!weekly || !r.archived)).map((r) => ({ value: r.id, label: r.name + (r.archived ? ' (archived)' : '') }))
+                ]} />}
+                {name === 'Staff Time Off' && <>
+                  <SChoice label="Time-off status" value={filter.timeOffStatus || 'All'} onChange={(v) => set('timeOffStatus', v)} options={['All', 'Pending', 'Approved', 'Declined']} />
+                  <SField label="Entered from" type="date" value={filter.enteredFrom || ''} onChange={(v) => set('enteredFrom', v)} />
+                  <SField label="Entered to" type="date" value={filter.enteredTo || ''} onChange={(v) => set('enteredTo', v)} />
+                </>}
+                {availability && <SChoice label="Sort by" value={filter.sort || (weekly ? 'Staff (A–Z)' : 'Start (oldest first)')} onChange={(v) => set('sort', v)} options={weekly ? availabilitySorts.slice(4) : name === 'Business Blockout Dates' ? availabilitySorts.slice(0, 2) : availabilitySorts} />}
+                {catalog && <>
+                  {name === 'Packages' ? <>
+                    <SChoice label="Service" value={filter.service || ''} onChange={(service) => setFilter((old) => ({ ...old, service, packageGroup: '' }))} options={[{ value: '', label: 'All services' }, ...[...new Set(p.data.packages.map((pkg) => pkg.service))].sort().map((s) => ({ value: s, label: s }))]} />
+                    <SChoice label="Package group" value={filter.packageGroup || ''} onChange={(v) => set('packageGroup', v)} options={[{ value: '', label: 'All groups' }, ...catalogGroups(p.data, filter.service).map((g) => ({ value: g || '__ungrouped__', label: g || 'Ungrouped' }))]} />
+                  </> : <SChoice label="Category" value={filter.categoryId || ''} onChange={(v) => set('categoryId', v)} options={[{ value: '', label: 'All categories' }, { value: '__uncategorized__', label: 'Uncategorized' }, ...catalogCategories(p.data, name).map((c) => ({ value: c.id, label: c.name + (c.archived ? ' (archived)' : '') }))]} />}
+                  <SChoice label="Catalog status" value={filter.catalogStatus || (name === 'Packages' ? 'All' : 'Active')} onChange={(v) => set('catalogStatus', v)} options={catalogStatuses(name)} />
+                  <SChoice label="Sort by" value={filter.sort || 'Name (A–Z)'} onChange={(v) => set('sort', v)} options={catalogSorts} />
+                </>}
+                {balances && <>
+                  <SField label="Due date from" type="date" value={filter.dueFrom || ''} onChange={v => set('dueFrom', v)} />
+                  <SField label="Due date to" type="date" value={filter.dueTo || ''} onChange={v => set('dueTo', v)} />
+                  <SChoice label="Event status" value={filter.status === 'proposal' ? 'proposal' : 'confirmed'} options={[{ value: 'confirmed', label: 'Confirmed bookings' }, { value: 'proposal', label: 'Proposals' }]} onChange={v => set('status', v)} />
+                  <SChoice label="Due status" value={filter.dueStatus || 'All'} options={['All', 'Past due', 'Due today', 'Upcoming']} onChange={v => set('dueStatus', v)} />
+                  <SChoice label="Has payment plan" value={filter.hasPlan || 'All'} options={['All', 'Yes', 'No']} onChange={v => set('hasPlan', v)} />
+                  <SChoice label="Service" value={filter.service || ''} options={[{ value: '', label: 'All services' }, ...[...new Set(p.data.events.flatMap(e => e.items.map(i => i.service)))].sort().map(s => ({ value: s, label: s }))]} onChange={v => set('service', v)} />
+                  <SField label="Minimum remaining (USD)" type="number" value={filter.minAmount || ''} onChange={v => set('minAmount', v)} />
+                  <SField label="Maximum remaining (USD)" type="number" value={filter.maxAmount || ''} onChange={v => set('maxAmount', v)} />
+                  {name === 'Scheduled Payments' && <SChoice label="Payment type" value={filter.paymentType || 'All'} options={['All', 'Scheduled Payment', 'Final Balance']} onChange={v => set('paymentType', v)} />}
+                  <SChoice label="Sort by" value={filter.sort || balanceSorts[0]} options={balanceSorts} onChange={v => set('sort', v)} />
+                </>}
               </div>
+              {report.error && <p role="alert" className="padded error">{report.error}</p>}
+              {(availability || catalog || utilization || frequency || balances) && <details className="padded"><summary>Columns</summary><div className="sales-filters">{report.columns.map((column) => <SToggle key={column} label={column} value={report.headers.includes(column)} onChange={(checked) => {
+                const next = checked ? [...report.headers, column] : report.headers.filter((c) => c !== column);
+                if (next.length) setFilter((old) => ({ ...old, columns: next }));
+              }} />)}</div><small className="muted">Keep at least one column. CSV exports use these columns.</small></details>}
               <p className="padded muted">{report.rows.length} matching rows</p>
+              {balances && 'totals' in report && <div className="sales-metrics">{Object.entries(report.totals).map(([label, value]) => <article key={label}><span>{label.replace(' USD', '')}</span><strong>{money(Number(value) * 100)}</strong></article>)}</div>}
               <STable
                 headers={report.headers}
-                rows={report.rows.map((r) =>
-                  r.map((v) =>
-                    typeof v === 'number'
+                rows={report.rows.map((r, index) =>
+                  r.map((v, col) =>
+                    balances && report.headers[col] === 'Event' && 'balanceEventIds' in report ? <button className="record-link" onClick={() => { const e = p.data.events.find(e => e.id === report.balanceEventIds[index]); if (e) p.onOpen(e); }}>{String(v)}</button> : frequency && 'frequencyEntries' in report ? <button className="record-link" onClick={() => setFrequencyDetail(report.frequencyEntries[index].id)}>{typeof v === 'number' ? new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(v) : String(v)}</button> : utilization && report.headers[col] === 'Name' && 'entries' in report ? <button className="record-link" onClick={() => setUtilizationDetail(report.entries[index].id)}>{String(v)}</button> : catalog && ['Title', 'Name'].includes(report.headers[col]) && p.onOpenCatalog && 'recordIds' in report && (name === 'Packages' || !p.data.resources?.find((item) => item.id === report.recordIds[index])?.archived) ? <button className="record-link" onClick={() => p.onOpenCatalog?.(name, report.recordIds[index])}>{String(v)}</button> : typeof v === 'number'
                       ? new Intl.NumberFormat('en-US', {
                           maximumFractionDigits: 2,
                         }).format(v)
@@ -351,6 +416,18 @@ function Reports(p: SalesProps) {
                   ),
                 )}
               />
+              {frequency && 'frequencyEntries' in report && report.frequencyEntries.filter((r) => r.id === frequencyDetail).map((entry) => <div className="padded" key={entry.id}>
+                <SHeader title={entry.name + ' · bookings'}><button className="secondary" onClick={() => setFrequencyDetail('')}>Close details</button></SHeader>
+                <STable headers={['Booking', 'Scheduled date', 'Client']} rows={entry.eventIds.map((id) => { const e = p.data.events.find((e) => e.id === id)!; return [<button className="record-link" onClick={() => p.onOpen(e)}>{e.title}</button>, e.date, e.client]; })} />
+              </div>)}
+              {utilization && 'entries' in report && report.entries.filter((r) => r.id === utilizationDetail).map((entry) => <div className="padded" key={entry.id}>
+                <SHeader title={entry.name + ' · reservations'}><button className="secondary" onClick={() => setUtilizationDetail('')}>Close details</button></SHeader>
+                {!entry.reservations.length ? <p>No reservations overlap this date.</p> : <STable headers={['Booking / appointment', 'Start', 'End', 'Quantity']} rows={entry.reservations.map((r) => [
+                  r.kind === 'booking' ? <button className="record-link" onClick={() => { const e = p.data.events.find((e) => e.id === r.id); if (e) p.onOpen(e); }}>{r.title}</button> : <button className="record-link" onClick={() => p.onNavigate('Appointments')}>{r.title}</button>,
+                  new Date(r.start).toISOString().slice(0, 16).replace('T', ' '), new Date(r.end).toISOString().slice(0, 16).replace('T', ' '), r.quantity,
+                ])} />}
+                <button className="secondary" onClick={() => p.onNavigate(filter.group === 'Staff' ? 'Set Booking Availability' : filter.group === 'Add-ons' ? 'Add-ons' : filter.group === 'Backdrops' ? 'Backdrops' : 'Availability rules')}>{filter.group === 'Staff' ? 'Manage staff availability' : filter.group === 'Add-ons' || filter.group === 'Backdrops' ? 'Open catalog' : 'Manage shared availability limits'}</button>
+              </div>)}
             </>
           )}
         </>
@@ -484,7 +561,7 @@ function Calendar(p: SalesProps) {
       lines = [
         'BEGIN:VCALENDAR',
         'VERSION:2.0',
-        'PRODID:-//EventDesk//Sales Calendar//EN',
+        'PRODID:-//Eventdeskly//Sales Calendar//EN',
         'CALSCALE:GREGORIAN',
         ...items.flatMap((i) => [
           'BEGIN:VEVENT',
@@ -508,7 +585,7 @@ function Calendar(p: SalesProps) {
     );
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'eventdesk-calendar.ics';
+    a.download = 'eventdeskly-calendar.ics';
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }

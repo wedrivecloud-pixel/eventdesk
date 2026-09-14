@@ -137,12 +137,13 @@
 .catalog-photo {
   display: block;
   aspect-ratio: 16/10;
-  background: #e9eefb;
+  background: #fff;
 }
 .catalog-photo img {
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 .catalog-photo > span {
   display: grid;
@@ -150,6 +151,7 @@
   width: 100%;
   height: 100%;
   color: #7487ad;
+  background: #e9eefb;
 }
 .catalog-card-body {
   padding: 23px;

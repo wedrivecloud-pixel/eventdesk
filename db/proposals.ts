@@ -1,5 +1,6 @@
 import { rawDb } from './raw';
-import { operations } from './store';
+import { operations, configuration } from './store';
+import { documentIdentity, presentationFromSettings } from '@/lib/brand-presentation';
 import { getChatGPTUser } from '@/app/chatgpt-auth';
 import { type EventRecord, type Payment } from '@/lib/crm';
 export async function proposalAccess(id: string, token = '') {
@@ -41,20 +42,24 @@ export async function proposalAccess(id: string, token = '') {
   const payments = (
     await rawDb()
       .prepare(
-        'SELECT id,event_id,amount,tip,method,date FROM payments WHERE event_id=? AND business_id=? ORDER BY date',
+        "SELECT id,event_id,amount,tip,method,date FROM payments WHERE event_id=? AND business_id=? AND voided_at='' ORDER BY date",
       )
       .bind(id, row.business_id)
       .all<Payment>()
   ).results;
+  const settings = (await configuration(row.business_id)).settings;
+  const brand = e.operations?.brand;
   return {
     event: e,
     payments,
     bid: String(row.business_id),
     owner,
-    business: {
-      name: String(row.business_name),
-      email: String(row.business_email),
-      phone: String(row.business_phone || ''),
-    },
+    business: documentIdentity({
+      name: e.operations?.brand?.name ?? String(row.business_name),
+      email: e.operations?.brand?.email ?? String(row.business_email),
+      phone: e.operations?.brand?.phone ?? String(row.business_phone || ''),
+      address: brand ? brand.address : String(settings.address || ''),
+      website: brand ? brand.website : String(settings.website || ''),
+    }, brand || presentationFromSettings(settings)),
   };
 }

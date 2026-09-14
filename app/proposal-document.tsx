@@ -11,7 +11,7 @@ export function ProposalDocument({
   discountControl,
 }: {
   summary: ProposalSummary;
-  business: { name: string; email: string; phone: string };
+  business: { name: string; email: string; phone: string; address?: string; website?: string };
   invoice?: boolean;
   attachments?: EventAttachment[];
   onManage?: (kind: 'addons' | 'backdrops', packageId: string) => void;
@@ -21,6 +21,7 @@ export function ProposalDocument({
     <article className="proposal-paper">
       <header className="proposal-brand">
         <div>
+          {s.brandPresentation?.logoUrl && <Image unoptimized width={180} height={80} className="proposal-document-logo" src={s.brandPresentation.logoUrl} alt={business.name + ' logo'} />}
           <p className="eyebrow">
             {invoice
               ? 'Invoice'
@@ -33,17 +34,22 @@ export function ProposalDocument({
             {business.email}
             {business.phone ? ' · ' + business.phone : ''}
           </p>
+          {business.address && <p className="proposal-preserve">{business.address}</p>}
+          {business.website && <p><a href={business.website}>{business.website}</a></p>}
         </div>
         <strong>{s.invoice.number}</strong>
       </header>
       <h2>{s.title}</h2>
       {!invoice && s.intro && <p className="proposal-intro">{s.intro}</p>}
-      {!invoice && s.presentation?.about && (
+      {!invoice && (s.presentation?.about || s.brandPresentation?.about) && (
         <section>
           <h3>About us</h3>
-          <p className="proposal-preserve">{s.presentation.about}</p>
+          <p className="proposal-preserve">{s.presentation?.about || s.brandPresentation?.about}</p>
         </section>
       )}
+      {!invoice && !!s.brandPresentation?.trustIndicators.length && <section className="proposal-trust-indicators" aria-label="Business highlights">
+        {s.brandPresentation.trustIndicators.map(({ type, value }) => <div key={type}><strong>{value}</strong><span>{type}</span></div>)}
+      </section>}
       <div className="proposal-facts">
         <div>
           <small>PREPARED FOR</small>

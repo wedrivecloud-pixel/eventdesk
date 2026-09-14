@@ -1,5 +1,10 @@
 import type { PreparedStatement } from '@/db/raw';
+import { balanceReports, balanceColumns, balanceSorts } from '@/lib/balance-reports';
 import { reportNames } from '@/lib/sales-reports';
+import { frequencyGroups, frequencyColumns } from '@/lib/frequency-reports';
+import { utilizationGroups, utilizationSorts, utilizationColumns } from '@/lib/utilization-reports';
+import { catalogReports, catalogSorts, catalogStatuses, catalogColumns, defaultCatalogColumns, catalogKind } from '@/lib/catalog-reports';
+import { availabilityReports, availabilitySorts, availabilityColumns } from '@/lib/availability-reports';
 import { rawDb } from './raw';
 import { timeOffWindow } from '@/lib/staff-scheduling';
 import { text, date, email, cents } from '@/lib/crm';
@@ -233,7 +238,67 @@ export async function validatedSales(
       throw Error('Choose an available report.');
     if (d.from && d.to && d.from > d.to)
       throw Error('Last date must follow first date.');
+    let availability = {};
+    if (availabilityReports.includes(d.report)) {
+      const staff = optional(d.staffId, 'Staff', 100);
+      if (staff && !(await rawDb().prepare("SELECT id FROM resources WHERE id=? AND business_id=? AND kind='staff'").bind(staff, bid).first()))
+        throw Error('Staff unavailable.');
+      const enteredFrom = date(d.enteredFrom ?? '', 'Entered from', false), enteredTo = date(d.enteredTo ?? '', 'Entered to', false);
+      if (enteredFrom && enteredTo && enteredFrom > enteredTo) throw Error('Entered-to date must follow entered-from date.');
+      const allowed = availabilityColumns(d.report);
+      if (d.columns !== undefined && (!Array.isArray(d.columns) || d.columns.length > allowed.length || d.columns.some((c: unknown) => typeof c !== 'string' || !allowed.includes(c))))
+        throw Error('Choose valid report columns.');
+      availability = { staffId: staff, enteredFrom, enteredTo,
+        timeOffStatus: choice(d.timeOffStatus, ['All', 'Pending', 'Approved', 'Declined'], 'All'),
+        sort: choice(d.sort || undefined, availabilitySorts, d.report === 'Staff Availability' ? 'Staff (A–Z)' : 'Start (oldest first)'),
+        columns: d.columns?.length ? [...new Set(d.columns)] : allowed };
+    }
+    let catalog = {};
+    if (catalogReports.includes(d.report)) {
+      const categoryId = optional(d.categoryId, 'Category', 100);
+      if (categoryId && categoryId !== '__uncategorized__') {
+        const category = await rawDb().prepare("SELECT data FROM resources WHERE id=? AND business_id=? AND kind='categories'").bind(categoryId, bid).first<{ data: string }>();
+        if (!category || JSON.parse(category.data).ownerKind !== catalogKind(d.report)) throw Error('Category unavailable.');
+      }
+      const allowed = catalogColumns(d.report);
+      if (d.columns !== undefined && (!Array.isArray(d.columns) || !d.columns.length || d.columns.length > allowed.length || d.columns.some((c: unknown) => typeof c !== 'string' || !allowed.includes(c)))) throw Error('Choose valid report columns.');
+      catalog = { categoryId, service: optional(d.service, 'Service', 150), packageGroup: optional(d.packageGroup, 'Package group', 150),
+        catalogStatus: choice(d.catalogStatus || undefined, catalogStatuses(d.report), d.report === 'Packages' ? 'All' : 'Active'),
+        sort: choice(d.sort || undefined, catalogSorts, 'Name (A–Z)'), columns: d.columns ? [...new Set(d.columns)] : defaultCatalogColumns(d.report) };
+    }
+    let utilization = {};
+    let balances = {};
+    if (balanceReports.includes(d.report)) {
+      const allowed = balanceColumns(d.report), dueFrom = date(d.dueFrom ?? '', 'Due from', false), dueTo = date(d.dueTo ?? '', 'Due to', false);
+      if (dueFrom && dueTo && dueFrom > dueTo) throw Error('Due-to date must follow due-from date.');
+      const minAmount = optional(d.minAmount, 'Minimum amount', 20), maxAmount = optional(d.maxAmount, 'Maximum amount', 20);
+      for (const value of [minAmount, maxAmount]) if (value && (!Number.isFinite(Number(value)) || Number(value) < 0)) throw Error('Enter a valid nonnegative amount.');
+      if (minAmount && maxAmount && Number(minAmount) > Number(maxAmount)) throw Error('Maximum amount must be at least the minimum.');
+      if (d.columns !== undefined && (!Array.isArray(d.columns) || !d.columns.length || d.columns.length > allowed.length || d.columns.some((c: unknown) => typeof c !== 'string' || !allowed.includes(c)))) throw Error('Choose valid report columns.');
+      balances = { dueFrom, dueTo, minAmount, maxAmount, service: optional(d.service, 'Service', 150),
+        dueStatus: choice(d.dueStatus || undefined, ['All', 'Past due', 'Due today', 'Upcoming'], 'All'),
+        hasPlan: choice(d.hasPlan || undefined, ['All', 'Yes', 'No'], 'All'),
+        paymentType: choice(d.paymentType || undefined, ['All', 'Scheduled Payment', 'Final Balance'], 'All'),
+        sort: choice(d.sort || undefined, balanceSorts, balanceSorts[0]), columns: d.columns ? [...new Set(d.columns)] : allowed };
+    }
+    let frequency = {};
+    if (d.report === 'Most Frequently Booked') {
+      const group = choice(d.group || undefined, frequencyGroups, 'Packages'), allowed = frequencyColumns(group);
+      if (d.columns !== undefined && (!Array.isArray(d.columns) || !d.columns.length || d.columns.length > allowed.length || d.columns.some((c: unknown) => typeof c !== 'string' || !allowed.includes(c)))) throw Error('Choose valid report columns.');
+      frequency = { columns: d.columns ? [...new Set(d.columns)] : allowed };
+    }
+    if (d.report === 'Daily Utilization') {
+      const allowed = utilizationColumns;
+      if (d.columns !== undefined && (!Array.isArray(d.columns) || !d.columns.length || d.columns.length > allowed.length || d.columns.some((c: unknown) => typeof c !== 'string' || !allowed.includes(c)))) throw Error('Choose valid report columns.');
+      choice(d.group, utilizationGroups, 'Packages');
+      utilization = { utilizationDate: date(d.utilizationDate, 'Utilization date'), sort: choice(d.sort || undefined, utilizationSorts, 'Name (A–Z)'), columns: d.columns ? [...new Set(d.columns)] : allowed };
+    }
     return {
+      ...utilization,
+      ...balances,
+      ...frequency,
+      ...availability,
+      ...catalog,
       name: text(d.name, 'Report name', 120),
       report: text(d.report, 'Report', 100),
       from: date(d.from ?? '', 'First date', false),

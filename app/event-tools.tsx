@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { BookingDesigns } from './booking-designs';
+import { VoidPaymentButton, PaymentVoidAudit } from './payment-void';
 import {
   Select,
   SelectContent,
@@ -18,6 +19,7 @@ import {
   type LineItem,
 } from '@/lib/crm';
 import { calculateQuote, type Quote } from '@/lib/quote';
+import { bookingExtrasQuote } from '@/lib/booking-extras';
 import { mergedSettings } from '@/lib/settings';
 import { extraAvailable, appliesTo } from '@/lib/manage-config';
 import {bookingQuestions} from '@/lib/manage-questions';
@@ -87,7 +89,7 @@ export function EventExtras({
   const bookingFields=item?.operations?.bookingFields||bookingQuestions(data.resources||[],ids,true);
   const r = data.resources || [],
     s = mergedSettings(data.settings);
-  const packages =
+  const packages = item?.status === 'confirmed' ? item.items :
     pricedItems ??
     data.packages
       .filter((p) => ids.includes(p.id))
@@ -105,8 +107,8 @@ export function EventExtras({
     error = '';
   try {
     quote =
-      item?.status === 'confirmed' && old
-        ? old
+      item?.status === 'confirmed'
+        ? bookingExtrasQuote(packages, r, s, { date, time: item.time, addonIds, addonQuantities: quantities, extraPackageIds: parents, backdropId }, old)
         : calculateQuote(
             packages,
             r,
@@ -138,10 +140,13 @@ export function EventExtras({
         <Select
           value={value || 'none'}
           onValueChange={(v) => change(v === 'none' ? '' : String(v))}
-          disabled={item?.status === 'confirmed'}
+          disabled={item?.status === 'confirmed' && kind !== 'backdrops'}
         >
           <SelectTrigger aria-label={label}>
-            <SelectValue />
+            <SelectValue>
+              {r.find((x) => x.kind === kind && x.id === value)?.name ||
+                old?.extras.find((x) => x.id === value)?.name || 'None'}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="none">None</SelectItem>
@@ -198,10 +203,9 @@ export function EventExtras({
             .map((a) => (
               <div key={a.id} className="check-card">
                 <Checkbox
+                  aria-label={a.name}
                   checked={addonIds.includes(a.id) || included.includes(a.id)}
-                  disabled={
-                    item?.status === 'confirmed' || included.includes(a.id)
-                  }
+                  disabled={included.includes(a.id)}
                   onCheckedChange={(v) =>
                     setAddonIds(
                       v
@@ -213,7 +217,7 @@ export function EventExtras({
                 <span>{a.name}</span>
                 {(addonIds.includes(a.id) || included.includes(a.id)) && (
                   <div>
-                    <label>
+                    <label className="field" style={{ width: 88, maxWidth: '100%' }}>
                       Quantity
                       <input
                         aria-label={'Quantity for ' + a.name}
@@ -226,7 +230,6 @@ export function EventExtras({
                             1,
                         )}
                         step={1}
-                        disabled={item?.status === 'confirmed'}
                         value={quantities[a.id] || 1}
                         onChange={(e) =>
                           setQuantities({
@@ -237,10 +240,9 @@ export function EventExtras({
                       />
                     </label>
                     {packages.length > 1 && (
-                      <label>
+                      <label className="field">
                         For package
                         <select
-                          disabled={item?.status === 'confirmed'}
                           value={
                             parents[a.id] ||
                             old?.extras.find((x) => x.id === a.id)?.packageId ||
@@ -347,6 +349,7 @@ export function EventExtras({
 export function EventPlanning({
   item,
   data,
+  onData,
   onSave,
   busy,
   initialTab = 'planning',
@@ -354,6 +357,7 @@ export function EventPlanning({
 }: {
   item: EventRecord;
   data: Data;
+  onData: (data: Data) => void;
   onSave: Save;
   busy: boolean;
   initialTab?: string;
@@ -368,6 +372,7 @@ export function EventPlanning({
   const ops = item.operations || {},
     resources = data.resources || [],
     payments = (data.payments || []).filter((p) => p.event_id === item.id),
+    voidedPayments = (data.voidedPayments || []).filter((p) => p.event_id === item.id),
     paid = payments.reduce((s, p) => s + p.amount, 0);
   const active = resources.filter((x) => !x.archived);
   const message = active.find((x) => x.id === messageId);
@@ -664,12 +669,21 @@ export function EventPlanning({
                 {prettyDate(p.date)} · {p.method}
                 <small>{p.reference}</small>
               </span>
-              <b>
+              <div className="payment-row-actions"><b>
                 {money(p.amount)}
                 {p.tip ? <small> + {money(p.tip)} tip</small> : null}
-              </b>
+              </b><VoidPaymentButton payment={p} event={item} data={data} onData={onData} disabled={busy} /></div>
             </div>
           ))}
+          {voidedPayments.length > 0 && <details className="payment-void-history">
+            <summary>Voided payments ({voidedPayments.length})</summary>
+            <p>These entries are kept for your records and excluded from payment totals.</p>
+            {voidedPayments.map(p => <div className="payment-row" key={p.id}>
+              <span>{prettyDate(p.date)} · {p.method}<small>{p.reference}</small></span>
+              <b>{money(p.amount)}{p.tip ? <small> + {money(p.tip)} tip</small> : null}</b>
+              <PaymentVoidAudit payment={p} />
+            </div>)}
+          </details>}
           {item.total >= paid && (
             <form
               className="form-stack"

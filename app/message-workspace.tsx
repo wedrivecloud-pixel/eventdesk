@@ -265,7 +265,7 @@ export function MessageWorkspace({
             {system
               ? r.id
                 ? 'Customized'
-                : 'EventDesk default'
+                : 'Eventdeskly default'
               : r.archived
                 ? 'Archived'
                 : r.data.enabled === false
@@ -420,7 +420,7 @@ export function MessageWorkspace({
         <>
           <h3>Browse Templates</h3>
           <p className="muted">
-            EventDesk starter messages. Review and customize a template before
+            Eventdeskly starter messages. Review and customize a template before
             saving it.
           </p>
           <div className="message-library">{library.map(starterCard)}</div>
@@ -620,7 +620,7 @@ export function MessageWorkspace({
             </DialogTitle>
             <DialogDescription>
               {action === 'reset'
-                ? `Replace your edits to ${target?.name} with the EventDesk default?`
+                ? `Replace your edits to ${target?.name} with the Eventdeskly default?`
                 : `Delete ${target?.name}? Existing drafts will be kept.`}
             </DialogDescription>
           </DialogHeader>
